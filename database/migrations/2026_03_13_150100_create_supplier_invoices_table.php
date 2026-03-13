@@ -6,40 +6,22 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-
     public function up(): void
     {
-
         Schema::create('supplier_invoices', function (Blueprint $table) {
-
             $table->id();
-
-            $table->foreignId('supplier_id')
-                ->constrained()
-                ->cascadeOnDelete();
-
+            $table->foreignId('supplier_id')->constrained()->cascadeOnDelete();
             $table->string('invoice_number')->unique();
-
             $table->date('invoice_date');
-
-            $table->decimal('amount',12,2);
-
+            $table->decimal('amount', 12, 2);
             $table->text('description')->nullable();
-
-            $table->foreignId('created_by')
-                ->nullable()
-                ->constrained('users')
-                ->nullOnDelete();
-
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
-
         });
-
     }
 
     public function down(): void
     {
         Schema::dropIfExists('supplier_invoices');
     }
-
 };

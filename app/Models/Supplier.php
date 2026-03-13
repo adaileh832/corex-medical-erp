@@ -14,7 +14,7 @@ class Supplier extends Model
         'phone',
         'address',
         'notes',
-        'created_by'
+        'created_by',
     ];
 
     public function invoices()
@@ -25,5 +25,10 @@ class Supplier extends Model
     public function payments()
     {
         return $this->hasMany(SupplierPayment::class);
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

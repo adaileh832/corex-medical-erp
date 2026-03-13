@@ -78,8 +78,21 @@
                         <a href="{{ route('operations.index') }}" class="btn btn-sm btn-outline-secondary">{{ __('app.operations') }}</a>
                     @endif
 
+                    @if(
+                        auth()->user()->hasPermission('manage-suppliers') ||
+                        auth()->user()->hasPermission('manage-supplier-invoices') ||
+                        auth()->user()->hasPermission('manage-supplier-payments') ||
+                        auth()->user()->hasPermission('view-supplier-statements')
+                    )
+                        <a href="{{ route('suppliers.index') }}" class="btn btn-sm btn-outline-primary">{{ __('app.suppliers') }}</a>
+                    @endif
+
                     @if(auth()->user()->hasPermission('view-doctor-statements'))
                         <a href="{{ route('doctor-statements.index') }}" class="btn btn-sm btn-outline-danger">{{ __('app.doctor_statements') }}</a>
+                    @endif
+
+                    @if(auth()->user()->hasPermission('view-supplier-statements'))
+                        <a href="{{ route('supplier-statements.index') }}" class="btn btn-sm btn-outline-dark">{{ __('app.supplier_statements') }}</a>
                     @endif
 
                     <a href="{{ route('locale.switch', 'ar') }}" class="btn btn-sm btn-outline-secondary">AR</a>

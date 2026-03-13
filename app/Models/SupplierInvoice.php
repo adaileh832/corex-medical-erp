@@ -15,16 +15,24 @@ class SupplierInvoice extends Model
         'invoice_date',
         'amount',
         'description',
-        'created_by'
+        'created_by',
     ];
 
-    protected $casts = [
-        'invoice_date' => 'date',
-        'amount' => 'decimal:2'
-    ];
+    protected function casts(): array
+    {
+        return [
+            'invoice_date' => 'date',
+            'amount' => 'decimal:2',
+        ];
+    }
 
     public function supplier()
     {
         return $this->belongsTo(Supplier::class);
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }
