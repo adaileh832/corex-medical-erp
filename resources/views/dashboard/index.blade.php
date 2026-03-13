@@ -9,7 +9,7 @@
         <div class="mt-3 mt-md-0">
             <span class="badge bg-dark fs-6">
                 {{ __('app.current_role') }}:
-                {{ auth()->user()->role?->name ?? '-' }}
+                {{ auth()->user()->role?->slug === 'manager' ? __('app.manager') : __('app.reception') }}
             </span>
         </div>
     </div>

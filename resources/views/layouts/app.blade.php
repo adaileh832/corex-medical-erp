@@ -7,29 +7,40 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap{{ $appDirection === 'rtl' ? '.rtl' : '' }}.min.css" rel="stylesheet">
+
     <style>
         body {
             background-color: #f5f7fb;
             font-family: Tahoma, Arial, sans-serif;
         }
+
         .navbar-brand img {
             height: 42px;
             width: auto;
             object-fit: contain;
         }
+
         .sidebar-card, .content-card {
             border: none;
             border-radius: 16px;
             box-shadow: 0 8px 30px rgba(0,0,0,0.06);
         }
+
         .brand-logo-login {
             max-height: 70px;
             width: auto;
             object-fit: contain;
         }
+
         .stat-card {
             border-radius: 18px;
             border: none;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+        }
+
+        .table-card {
+            border: none;
+            border-radius: 16px;
             box-shadow: 0 8px 25px rgba(0,0,0,0.05);
         }
     </style>
@@ -53,7 +64,17 @@
                     <span>{{ $hospitalName }}</span>
                 </a>
 
-                <div class="d-flex align-items-center gap-2">
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <a href="{{ route('dashboard') }}" class="btn btn-sm btn-outline-dark">
+                        {{ __('app.dashboard') }}
+                    </a>
+
+                    @if(auth()->user()->hasPermission('manage-patients'))
+                        <a href="{{ route('patients.index') }}" class="btn btn-sm btn-outline-primary">
+                            {{ __('app.patients') }}
+                        </a>
+                    @endif
+
                     <a href="{{ route('locale.switch', 'ar') }}" class="btn btn-sm btn-outline-secondary">AR</a>
                     <a href="{{ route('locale.switch', 'en') }}" class="btn btn-sm btn-outline-secondary">EN</a>
 
