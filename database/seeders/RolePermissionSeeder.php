@@ -17,6 +17,9 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'Manage Patients', 'slug' => 'manage-patients', 'group_name' => 'patients'],
             ['name' => 'Manage Doctors', 'slug' => 'manage-doctors', 'group_name' => 'doctors'],
             ['name' => 'Manage Procedures', 'slug' => 'manage-procedures', 'group_name' => 'procedures'],
+            ['name' => 'Manage Operations', 'slug' => 'manage-operations', 'group_name' => 'operations'],
+            ['name' => 'View Doctor Statements', 'slug' => 'view-doctor-statements', 'group_name' => 'doctors'],
+            ['name' => 'Manage Doctor Payments', 'slug' => 'manage-doctor-payments', 'group_name' => 'doctors'],
             ['name' => 'Manage Invoices', 'slug' => 'manage-invoices', 'group_name' => 'invoices'],
             ['name' => 'Print Invoices', 'slug' => 'print-invoices', 'group_name' => 'invoices'],
             ['name' => 'Manage Payments', 'slug' => 'manage-payments', 'group_name' => 'payments'],
@@ -56,6 +59,8 @@ class RolePermissionSeeder extends Seeder
             'manage-invoices',
             'print-invoices',
             'manage-payments',
+            'manage-operations',
+            'view-doctor-statements',
         ];
 
         $receptionPermissionIds = Permission::query()

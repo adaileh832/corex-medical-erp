@@ -74,6 +74,14 @@
                         <a href="{{ route('invoices.index') }}" class="btn btn-sm btn-outline-warning">{{ __('app.invoices') }}</a>
                     @endif
 
+                    @if(auth()->user()->hasPermission('manage-operations'))
+                        <a href="{{ route('operations.index') }}" class="btn btn-sm btn-outline-secondary">{{ __('app.operations') }}</a>
+                    @endif
+
+                    @if(auth()->user()->hasPermission('view-doctor-statements'))
+                        <a href="{{ route('doctor-statements.index') }}" class="btn btn-sm btn-outline-danger">{{ __('app.doctor_statements') }}</a>
+                    @endif
+
                     <a href="{{ route('locale.switch', 'ar') }}" class="btn btn-sm btn-outline-secondary">AR</a>
                     <a href="{{ route('locale.switch', 'en') }}" class="btn btn-sm btn-outline-secondary">EN</a>
 
