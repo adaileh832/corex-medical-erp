@@ -14,21 +14,33 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'Manage Users', 'slug' => 'manage-users', 'group_name' => 'users'],
             ['name' => 'Manage Roles', 'slug' => 'manage-roles', 'group_name' => 'roles'],
             ['name' => 'Manage Settings', 'slug' => 'manage-settings', 'group_name' => 'settings'],
+
             ['name' => 'Manage Patients', 'slug' => 'manage-patients', 'group_name' => 'patients'],
+
             ['name' => 'Manage Doctors', 'slug' => 'manage-doctors', 'group_name' => 'doctors'],
-            ['name' => 'Manage Procedures', 'slug' => 'manage-procedures', 'group_name' => 'procedures'],
-            ['name' => 'Manage Operations', 'slug' => 'manage-operations', 'group_name' => 'operations'],
             ['name' => 'View Doctor Statements', 'slug' => 'view-doctor-statements', 'group_name' => 'doctors'],
             ['name' => 'Manage Doctor Payments', 'slug' => 'manage-doctor-payments', 'group_name' => 'doctors'],
+
+            ['name' => 'Manage Procedures', 'slug' => 'manage-procedures', 'group_name' => 'procedures'],
+            ['name' => 'Manage Operations', 'slug' => 'manage-operations', 'group_name' => 'operations'],
+
             ['name' => 'Manage Invoices', 'slug' => 'manage-invoices', 'group_name' => 'invoices'],
             ['name' => 'Print Invoices', 'slug' => 'print-invoices', 'group_name' => 'invoices'],
+
             ['name' => 'Manage Payments', 'slug' => 'manage-payments', 'group_name' => 'payments'],
+
             ['name' => 'Manage Suppliers', 'slug' => 'manage-suppliers', 'group_name' => 'suppliers'],
             ['name' => 'Manage Supplier Invoices', 'slug' => 'manage-supplier-invoices', 'group_name' => 'suppliers'],
             ['name' => 'Manage Supplier Payments', 'slug' => 'manage-supplier-payments', 'group_name' => 'suppliers'],
             ['name' => 'View Supplier Statements', 'slug' => 'view-supplier-statements', 'group_name' => 'suppliers'],
+
+            ['name' => 'Manage Inventory Items', 'slug' => 'manage-inventory-items', 'group_name' => 'inventory'],
+            ['name' => 'Manage Stock Movements', 'slug' => 'manage-stock-movements', 'group_name' => 'inventory'],
+            ['name' => 'View Inventory Reports', 'slug' => 'view-inventory-reports', 'group_name' => 'inventory'],
+
             ['name' => 'View Accounting', 'slug' => 'view-accounting', 'group_name' => 'accounting'],
             ['name' => 'Manage Accounting', 'slug' => 'manage-accounting', 'group_name' => 'accounting'],
+
             ['name' => 'View Reports', 'slug' => 'view-reports', 'group_name' => 'reports'],
         ];
 
@@ -68,6 +80,9 @@ class RolePermissionSeeder extends Seeder
             'manage-supplier-invoices',
             'manage-supplier-payments',
             'view-supplier-statements',
+            'manage-inventory-items',
+            'manage-stock-movements',
+            'view-inventory-reports',
         ];
 
         $receptionPermissionIds = Permission::query()

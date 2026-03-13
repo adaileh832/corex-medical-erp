@@ -87,6 +87,14 @@
                         <a href="{{ route('suppliers.index') }}" class="btn btn-sm btn-outline-primary">{{ __('app.suppliers') }}</a>
                     @endif
 
+                    @if(
+                        auth()->user()->hasPermission('manage-inventory-items') ||
+                        auth()->user()->hasPermission('manage-stock-movements') ||
+                        auth()->user()->hasPermission('view-inventory-reports')
+                    )
+                        <a href="{{ route('inventory-items.index') }}" class="btn btn-sm btn-outline-success">{{ __('app.inventory') }}</a>
+                    @endif
+
                     @if(auth()->user()->hasPermission('view-doctor-statements'))
                         <a href="{{ route('doctor-statements.index') }}" class="btn btn-sm btn-outline-danger">{{ __('app.doctor_statements') }}</a>
                     @endif

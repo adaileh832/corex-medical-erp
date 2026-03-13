@@ -5,6 +5,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\DoctorPaymentController;
 use App\Http\Controllers\DoctorStatementController;
+use App\Http\Controllers\InventoryItemController;
+use App\Http\Controllers\InventoryReportController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\OperationController;
@@ -13,6 +15,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProcedureController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SetupController;
+use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\SupplierInvoiceController;
 use App\Http\Controllers\SupplierPaymentController;
@@ -128,6 +131,27 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('permission:view-supplier-statements')->group(function () {
         Route::get('/supplier-statements', [SupplierStatementController::class, 'index'])->name('supplier-statements.index');
+    });
+
+    Route::middleware('permission:manage-inventory-items')->group(function () {
+        Route::get('/inventory-items', [InventoryItemController::class, 'index'])->name('inventory-items.index');
+        Route::get('/inventory-items/create', [InventoryItemController::class, 'create'])->name('inventory-items.create');
+        Route::post('/inventory-items', [InventoryItemController::class, 'store'])->name('inventory-items.store');
+        Route::get('/inventory-items/{inventoryItem}/edit', [InventoryItemController::class, 'edit'])->name('inventory-items.edit');
+        Route::put('/inventory-items/{inventoryItem}', [InventoryItemController::class, 'update'])->name('inventory-items.update');
+        Route::delete('/inventory-items/{inventoryItem}', [InventoryItemController::class, 'destroy'])->name('inventory-items.destroy');
+    });
+
+    Route::middleware('permission:manage-stock-movements')->group(function () {
+        Route::get('/stock-movements', [StockMovementController::class, 'index'])->name('stock-movements.index');
+        Route::get('/stock-movements/create', [StockMovementController::class, 'create'])->name('stock-movements.create');
+        Route::post('/stock-movements', [StockMovementController::class, 'store'])->name('stock-movements.store');
+    });
+
+    Route::middleware('permission:view-inventory-reports')->group(function () {
+        Route::get('/inventory-reports/stock-summary', [InventoryReportController::class, 'stockSummary'])->name('inventory-reports.stock-summary');
+        Route::get('/inventory-reports/low-stock', [InventoryReportController::class, 'lowStock'])->name('inventory-reports.low-stock');
+        Route::get('/inventory-reports/movement-report', [InventoryReportController::class, 'movementReport'])->name('inventory-reports.movement-report');
     });
 
     Route::middleware('role:manager')->group(function () {
