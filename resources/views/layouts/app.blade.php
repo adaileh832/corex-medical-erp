@@ -32,15 +32,10 @@
             object-fit: contain;
         }
 
-        .stat-card {
+        .stat-card,
+        .table-card {
             border-radius: 18px;
             border: none;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.05);
-        }
-
-        .table-card {
-            border: none;
-            border-radius: 16px;
             box-shadow: 0 8px 25px rgba(0,0,0,0.05);
         }
     </style>
@@ -72,6 +67,18 @@
                     @if(auth()->user()->hasPermission('manage-patients'))
                         <a href="{{ route('patients.index') }}" class="btn btn-sm btn-outline-primary">
                             {{ __('app.patients') }}
+                        </a>
+                    @endif
+
+                    @if(auth()->user()->hasPermission('manage-doctors'))
+                        <a href="{{ route('doctors.index') }}" class="btn btn-sm btn-outline-success">
+                            {{ __('app.doctors') }}
+                        </a>
+                    @endif
+
+                    @if(auth()->user()->hasPermission('manage-procedures'))
+                        <a href="{{ route('procedures.index') }}" class="btn btn-sm btn-outline-info">
+                            {{ __('app.procedures') }}
                         </a>
                     @endif
 
