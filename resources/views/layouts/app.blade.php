@@ -20,23 +20,19 @@
             object-fit: contain;
         }
 
-        .sidebar-card, .content-card {
+        .content-card,
+        .table-card,
+        .stat-card {
             border: none;
-            border-radius: 16px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.06);
-        }
-
-        .brand-logo-login {
-            max-height: 70px;
-            width: auto;
-            object-fit: contain;
-        }
-
-        .stat-card,
-        .table-card {
             border-radius: 18px;
-            border: none;
             box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+        }
+
+        .summary-box {
+            border-radius: 14px;
+            padding: 16px;
+            background: #f8fafc;
+            border: 1px solid #e9ecef;
         }
     </style>
 </head>
@@ -60,35 +56,29 @@
                 </a>
 
                 <div class="d-flex flex-wrap align-items-center gap-2">
-                    <a href="{{ route('dashboard') }}" class="btn btn-sm btn-outline-dark">
-                        {{ __('app.dashboard') }}
-                    </a>
+                    <a href="{{ route('dashboard') }}" class="btn btn-sm btn-outline-dark">{{ __('app.dashboard') }}</a>
 
                     @if(auth()->user()->hasPermission('manage-patients'))
-                        <a href="{{ route('patients.index') }}" class="btn btn-sm btn-outline-primary">
-                            {{ __('app.patients') }}
-                        </a>
+                        <a href="{{ route('patients.index') }}" class="btn btn-sm btn-outline-primary">{{ __('app.patients') }}</a>
                     @endif
 
                     @if(auth()->user()->hasPermission('manage-doctors'))
-                        <a href="{{ route('doctors.index') }}" class="btn btn-sm btn-outline-success">
-                            {{ __('app.doctors') }}
-                        </a>
+                        <a href="{{ route('doctors.index') }}" class="btn btn-sm btn-outline-success">{{ __('app.doctors') }}</a>
                     @endif
 
                     @if(auth()->user()->hasPermission('manage-procedures'))
-                        <a href="{{ route('procedures.index') }}" class="btn btn-sm btn-outline-info">
-                            {{ __('app.procedures') }}
-                        </a>
+                        <a href="{{ route('procedures.index') }}" class="btn btn-sm btn-outline-info">{{ __('app.procedures') }}</a>
+                    @endif
+
+                    @if(auth()->user()->hasPermission('manage-invoices'))
+                        <a href="{{ route('invoices.index') }}" class="btn btn-sm btn-outline-warning">{{ __('app.invoices') }}</a>
                     @endif
 
                     <a href="{{ route('locale.switch', 'ar') }}" class="btn btn-sm btn-outline-secondary">AR</a>
                     <a href="{{ route('locale.switch', 'en') }}" class="btn btn-sm btn-outline-secondary">EN</a>
 
                     @if(auth()->user()->hasRole('manager'))
-                        <a href="{{ route('settings.index') }}" class="btn btn-sm btn-primary">
-                            {{ __('app.settings') }}
-                        </a>
+                        <a href="{{ route('settings.index') }}" class="btn btn-sm btn-primary">{{ __('app.settings') }}</a>
                     @endif
 
                     <form action="{{ route('logout') }}" method="POST" class="d-inline">
