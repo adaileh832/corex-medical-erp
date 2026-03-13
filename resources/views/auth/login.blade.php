@@ -15,6 +15,7 @@
             justify-content: center;
             font-family: Tahoma, Arial, sans-serif;
         }
+
         .login-card {
             width: 100%;
             max-width: 460px;
@@ -22,10 +23,15 @@
             border-radius: 20px;
             box-shadow: 0 10px 35px rgba(0,0,0,0.08);
         }
+
         .brand-logo {
             max-height: 70px;
             width: auto;
             object-fit: contain;
+        }
+
+        .setup-manager-btn {
+            text-decoration: none;
         }
     </style>
 </head>
@@ -90,6 +96,14 @@
                 {{ __('app.login') }}
             </button>
         </form>
+
+        @if(!$managerExists)
+            <div class="text-center mt-4">
+                <a href="{{ route('setup.manager') }}" class="btn btn-dark w-100 setup-manager-btn">
+                    {{ app()->getLocale() === 'ar' ? 'إنشاء مدير النظام' : 'Create System Manager' }}
+                </a>
+            </div>
+        @endif
     </div>
 </body>
 </html>

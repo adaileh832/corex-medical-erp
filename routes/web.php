@@ -12,6 +12,8 @@ use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProcedureController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\SetupController;
+use App\Http\Controllers\SupplierController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -23,6 +25,9 @@ Route::get('/locale/{locale}', [LocaleController::class, 'switch'])->name('local
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
+
+    Route::get('/setup/manager', [SetupController::class, 'createManager'])->name('setup.manager');
+    Route::post('/setup/manager', [SetupController::class, 'storeManager'])->name('setup.manager.store');
 });
 
 Route::middleware('auth')->group(function () {
@@ -89,6 +94,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/doctors/{doctor}/payments/create', [DoctorPaymentController::class, 'create'])->name('doctor-payments.create');
         Route::post('/doctors/{doctor}/payments', [DoctorPaymentController::class, 'store'])->name('doctor-payments.store');
         Route::delete('/doctor-payments/{doctorPayment}', [DoctorPaymentController::class, 'destroy'])->name('doctor-payments.destroy');
+    });
+
+    Route::middleware('permission:manage-suppliers')->group(function () {
+        Route::get('/suppliers', [SupplierController::class, 'index'])->name('suppliers.index');
+        Route::get('/suppliers/create', [SupplierController::class, 'create'])->name('suppliers.create');
+        Route::post('/suppliers', [SupplierController::class, 'store'])->name('suppliers.store');
     });
 
     Route::middleware('role:manager')->group(function () {

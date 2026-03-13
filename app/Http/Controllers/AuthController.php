@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,7 +12,15 @@ class AuthController extends Controller
 {
     public function showLogin(): View
     {
-        return view('auth.login');
+        $managerExists = User::query()
+            ->whereHas('role', function ($query) {
+                $query->where('slug', 'manager');
+            })
+            ->exists();
+
+        return view('auth.login', [
+            'managerExists' => $managerExists,
+        ]);
     }
 
     public function login(Request $request): RedirectResponse
