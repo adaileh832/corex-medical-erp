@@ -1,0 +1,22 @@
+# CoreX Medical ERP - Refactor Plan
+
+## Phase 1
+- upgrade dashboard
+- redesign application layout
+- improve README and documentation
+- strengthen bilingual keys
+
+## Phase 2
+- split route files by domain
+- create reusable Blade partials
+- standardize cards, panels, forms, and tables
+
+## Phase 3
+- introduce service layer for business logic
+- reduce controller responsibilities
+- prepare API-ready architecture
+
+## Phase 4
+- improve reports and analytics
+- add richer widgets and charts
+- improve test coverage
