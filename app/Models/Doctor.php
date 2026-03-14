@@ -9,20 +9,22 @@ class Doctor extends Model
 {
     use HasFactory;
 
+    protected $table = 'doctors';
+
     protected $fillable = [
         'name',
-        'name_en',
+        'full_name',
+        'national_id',
         'doctor_type',
         'specialty',
         'phone',
+        'email',
+        'license_number',
         'notes',
-        'is_active',
     ];
 
-    protected function casts(): array
+    public function getDisplayNameAttribute(): string
     {
-        return [
-            'is_active' => 'boolean',
-        ];
+        return $this->full_name ?: ($this->name ?? '-');
     }
 }

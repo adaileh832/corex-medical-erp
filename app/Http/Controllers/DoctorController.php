@@ -5,29 +5,20 @@ namespace App\Http\Controllers;
 use App\Models\Doctor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 class DoctorController extends Controller
 {
-    public function index(Request $request): View
+    public function index(): View
     {
-        $search = trim((string) $request->get('search'));
-
         $doctors = Doctor::query()
-            ->when($search, function ($query) use ($search) {
-                $query->where(function ($subQuery) use ($search) {
-                    $subQuery->where('name', 'like', "%{$search}%")
-                        ->orWhere('name_en', 'like', "%{$search}%")
-                        ->orWhere('doctor_type', 'like', "%{$search}%")
-                        ->orWhere('specialty', 'like', "%{$search}%")
-                        ->orWhere('phone', 'like', "%{$search}%");
-                });
-            })
             ->latest()
-            ->paginate(10)
-            ->withQueryString();
+            ->paginate(10);
 
-        return view('doctors.index', compact('doctors', 'search'));
+        return view('doctors.index', [
+            'doctors' => $doctors,
+        ]);
     }
 
     public function create(): View
@@ -38,48 +29,65 @@ class DoctorController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'name_en' => ['nullable', 'string', 'max:255'],
-            'doctor_type' => ['required', 'string', 'max:100'],
+            'full_name' => ['required', 'string', 'max:255'],
+            'national_id' => ['required', 'digits:10'],
             'specialty' => ['nullable', 'string', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:50'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'license_number' => ['nullable', 'string', 'max:255'],
             'notes' => ['nullable', 'string'],
-            'is_active' => ['nullable', 'boolean'],
+        ], [
+            'full_name.required' => 'اسم الطبيب مطلوب / Doctor name is required.',
+            'national_id.required' => 'الرقم الوطني مطلوب / National ID is required.',
+            'national_id.digits' => 'الرقم الوطني يجب أن يكون 10 أرقام / National ID must be exactly 10 digits.',
         ]);
 
-        $validated['is_active'] = $request->boolean('is_active', true);
+        $data = $this->buildDoctorData($validated);
 
-        Doctor::create($validated);
+        Doctor::create($data);
 
         return redirect()
             ->route('doctors.index')
-            ->with('success', __('app.doctor_created'));
+            ->with('success', 'تم إنشاء الطبيب بنجاح / Doctor created successfully.');
+    }
+
+    public function show(Doctor $doctor): View
+    {
+        return view('doctors.show', [
+            'doctor' => $doctor,
+        ]);
     }
 
     public function edit(Doctor $doctor): View
     {
-        return view('doctors.edit', compact('doctor'));
+        return view('doctors.edit', [
+            'doctor' => $doctor,
+        ]);
     }
 
     public function update(Request $request, Doctor $doctor): RedirectResponse
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'name_en' => ['nullable', 'string', 'max:255'],
-            'doctor_type' => ['required', 'string', 'max:100'],
+            'full_name' => ['required', 'string', 'max:255'],
+            'national_id' => ['required', 'digits:10'],
             'specialty' => ['nullable', 'string', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:50'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'license_number' => ['nullable', 'string', 'max:255'],
             'notes' => ['nullable', 'string'],
-            'is_active' => ['nullable', 'boolean'],
+        ], [
+            'full_name.required' => 'اسم الطبيب مطلوب / Doctor name is required.',
+            'national_id.required' => 'الرقم الوطني مطلوب / National ID is required.',
+            'national_id.digits' => 'الرقم الوطني يجب أن يكون 10 أرقام / National ID must be exactly 10 digits.',
         ]);
 
-        $validated['is_active'] = $request->boolean('is_active', false);
+        $data = $this->buildDoctorData($validated);
 
-        $doctor->update($validated);
+        $doctor->update($data);
 
         return redirect()
             ->route('doctors.index')
-            ->with('success', __('app.doctor_updated'));
+            ->with('success', 'تم تحديث بيانات الطبيب بنجاح / Doctor updated successfully.');
     }
 
     public function destroy(Doctor $doctor): RedirectResponse
@@ -88,6 +96,29 @@ class DoctorController extends Controller
 
         return redirect()
             ->route('doctors.index')
-            ->with('success', __('app.doctor_deleted'));
+            ->with('success', 'تم حذف الطبيب بنجاح / Doctor deleted successfully.');
+    }
+
+    private function buildDoctorData(array $validated): array
+    {
+        $data = [
+            'full_name' => $validated['full_name'],
+            'national_id' => $validated['national_id'],
+            'specialty' => $validated['specialty'] ?? null,
+            'phone' => $validated['phone'] ?? null,
+            'email' => $validated['email'] ?? null,
+            'license_number' => $validated['license_number'] ?? null,
+            'notes' => $validated['notes'] ?? null,
+        ];
+
+        if (Schema::hasColumn('doctors', 'name')) {
+            $data['name'] = $validated['full_name'];
+        }
+
+        if (Schema::hasColumn('doctors', 'doctor_type')) {
+            $data['doctor_type'] = 'doctor';
+        }
+
+        return $data;
     }
 }
