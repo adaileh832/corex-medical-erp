@@ -5,27 +5,20 @@ namespace App\Http\Controllers;
 use App\Models\Procedure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 class ProcedureController extends Controller
 {
-    public function index(Request $request): View
+    public function index(): View
     {
-        $search = trim((string) $request->get('search'));
-
         $procedures = Procedure::query()
-            ->when($search, function ($query) use ($search) {
-                $query->where(function ($subQuery) use ($search) {
-                    $subQuery->where('name', 'like', "%{$search}%")
-                        ->orWhere('name_en', 'like', "%{$search}%")
-                        ->orWhere('description', 'like', "%{$search}%");
-                });
-            })
             ->latest()
-            ->paginate(10)
-            ->withQueryString();
+            ->paginate(10);
 
-        return view('procedures.index', compact('procedures', 'search'));
+        return view('procedures.index', [
+            'procedures' => $procedures,
+        ]);
     }
 
     public function create(): View
@@ -37,49 +30,60 @@ class ProcedureController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'name_en' => ['nullable', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
+            'code' => ['nullable', 'string', 'max:100'],
             'price' => ['required', 'numeric', 'min:0'],
-            'gynecologist_fee' => ['required', 'numeric', 'min:0'],
-            'anesthetist_fee' => ['required', 'numeric', 'min:0'],
-            'pediatrician_fee' => ['required', 'numeric', 'min:0'],
+            'duration_minutes' => ['nullable', 'integer', 'min:0'],
+            'description' => ['nullable', 'string'],
             'is_active' => ['nullable', 'boolean'],
+        ], [
+            'name.required' => 'اسم الإجراء مطلوب / Procedure name is required.',
+            'price.required' => 'السعر مطلوب / Price is required.',
         ]);
 
-        $validated['is_active'] = $request->boolean('is_active', true);
+        $data = $this->buildProcedureData($validated, $request);
 
-        Procedure::create($validated);
+        Procedure::create($data);
 
         return redirect()
             ->route('procedures.index')
-            ->with('success', __('app.procedure_created'));
+            ->with('success', 'تم إنشاء الإجراء بنجاح / Procedure created successfully.');
+    }
+
+    public function show(Procedure $procedure): View
+    {
+        return view('procedures.show', [
+            'procedure' => $procedure,
+        ]);
     }
 
     public function edit(Procedure $procedure): View
     {
-        return view('procedures.edit', compact('procedure'));
+        return view('procedures.edit', [
+            'procedure' => $procedure,
+        ]);
     }
 
     public function update(Request $request, Procedure $procedure): RedirectResponse
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'name_en' => ['nullable', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
+            'code' => ['nullable', 'string', 'max:100'],
             'price' => ['required', 'numeric', 'min:0'],
-            'gynecologist_fee' => ['required', 'numeric', 'min:0'],
-            'anesthetist_fee' => ['required', 'numeric', 'min:0'],
-            'pediatrician_fee' => ['required', 'numeric', 'min:0'],
+            'duration_minutes' => ['nullable', 'integer', 'min:0'],
+            'description' => ['nullable', 'string'],
             'is_active' => ['nullable', 'boolean'],
+        ], [
+            'name.required' => 'اسم الإجراء مطلوب / Procedure name is required.',
+            'price.required' => 'السعر مطلوب / Price is required.',
         ]);
 
-        $validated['is_active'] = $request->boolean('is_active', false);
+        $data = $this->buildProcedureData($validated, $request);
 
-        $procedure->update($validated);
+        $procedure->update($data);
 
         return redirect()
             ->route('procedures.index')
-            ->with('success', __('app.procedure_updated'));
+            ->with('success', 'تم تحديث الإجراء بنجاح / Procedure updated successfully.');
     }
 
     public function destroy(Procedure $procedure): RedirectResponse
@@ -88,6 +92,30 @@ class ProcedureController extends Controller
 
         return redirect()
             ->route('procedures.index')
-            ->with('success', __('app.procedure_deleted'));
+            ->with('success', 'تم حذف الإجراء بنجاح / Procedure deleted successfully.');
+    }
+
+    private function buildProcedureData(array $validated, Request $request): array
+    {
+        $data = [
+            'name' => $validated['name'],
+            'code' => $validated['code'] ?? null,
+            'price' => $validated['price'],
+            'duration_minutes' => $validated['duration_minutes'] ?? null,
+            'description' => $validated['description'] ?? null,
+            'is_active' => $request->boolean('is_active'),
+        ];
+
+        if (Schema::hasColumn('procedures', 'title') && !Schema::hasColumn('procedures', 'name')) {
+            $data['title'] = $validated['name'];
+            unset($data['name']);
+        }
+
+        if (Schema::hasColumn('procedures', 'status') && !Schema::hasColumn('procedures', 'is_active')) {
+            $data['status'] = $request->boolean('is_active') ? 'active' : 'inactive';
+            unset($data['is_active']);
+        }
+
+        return $data;
     }
 }

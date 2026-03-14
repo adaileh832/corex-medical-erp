@@ -81,14 +81,19 @@ Route::delete('/patients/{patient}', [PatientController::class, 'destroy'])->nam
         Route::delete('/doctors/{doctor}', [DoctorController::class, 'destroy'])->name('doctors.destroy');
     });
 
-    Route::middleware('permission:manage-procedures')->group(function () {
-        Route::get('/procedures', [ProcedureController::class, 'index'])->name('procedures.index');
-        Route::get('/procedures/create', [ProcedureController::class, 'create'])->name('procedures.create');
-        Route::post('/procedures', [ProcedureController::class, 'store'])->name('procedures.store');
-        Route::get('/procedures/{procedure}/edit', [ProcedureController::class, 'edit'])->name('procedures.edit');
-        Route::put('/procedures/{procedure}', [ProcedureController::class, 'update'])->name('procedures.update');
-        Route::delete('/procedures/{procedure}', [ProcedureController::class, 'destroy'])->name('procedures.destroy');
-    });
+    /*
+    |--------------------------------------------------------------------------
+    | CoreX Procedures Module
+    | وحدة الإجراءات - مثبتة مؤقتًا تحت auth فقط حتى نكمل الصلاحيات لاحقًا
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/procedures', [ProcedureController::class, 'index'])->name('procedures.index');
+    Route::get('/procedures/create', [ProcedureController::class, 'create'])->name('procedures.create');
+    Route::post('/procedures', [ProcedureController::class, 'store'])->name('procedures.store');
+    Route::get('/procedures/{procedure}', [ProcedureController::class, 'show'])->name('procedures.show');
+    Route::get('/procedures/{procedure}/edit', [ProcedureController::class, 'edit'])->name('procedures.edit');
+    Route::put('/procedures/{procedure}', [ProcedureController::class, 'update'])->name('procedures.update');
+    Route::delete('/procedures/{procedure}', [ProcedureController::class, 'destroy'])->name('procedures.destroy');
 
     Route::middleware('permission:manage-invoices')->group(function () {
         Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index');

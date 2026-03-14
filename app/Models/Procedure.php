@@ -9,25 +9,35 @@ class Procedure extends Model
 {
     use HasFactory;
 
+    protected $table = 'procedures';
+
     protected $fillable = [
         'name',
-        'name_en',
-        'description',
+        'title',
+        'code',
         'price',
-        'gynecologist_fee',
-        'anesthetist_fee',
-        'pediatrician_fee',
+        'duration_minutes',
+        'description',
         'is_active',
+        'status',
     ];
 
-    protected function casts(): array
+    protected $casts = [
+        'price' => 'decimal:2',
+        'is_active' => 'boolean',
+    ];
+
+    public function getDisplayNameAttribute(): string
     {
-        return [
-            'price' => 'decimal:2',
-            'gynecologist_fee' => 'decimal:2',
-            'anesthetist_fee' => 'decimal:2',
-            'pediatrician_fee' => 'decimal:2',
-            'is_active' => 'boolean',
-        ];
+        return $this->name ?: ($this->title ?? '-');
+    }
+
+    public function getDisplayStatusAttribute(): string
+    {
+        if (array_key_exists('is_active', $this->attributes)) {
+            return $this->is_active ? 'active' : 'inactive';
+        }
+
+        return $this->status ?? 'inactive';
     }
 }
