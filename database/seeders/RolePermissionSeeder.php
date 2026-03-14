@@ -2,109 +2,134 @@
 
 namespace Database\Seeders;
 
-use App\Models\Permission;
-use App\Models\Role;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
+use Spatie\Permission\PermissionRegistrar;
 
 class RolePermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        $permissions = [
-            ['name' => 'Manage Users', 'slug' => 'manage-users', 'group_name' => 'users'],
-            ['name' => 'Manage Roles', 'slug' => 'manage-roles', 'group_name' => 'roles'],
-            ['name' => 'Manage Settings', 'slug' => 'manage-settings', 'group_name' => 'settings'],
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-            ['name' => 'Manage Patients', 'slug' => 'manage-patients', 'group_name' => 'patients'],
-
-            ['name' => 'Manage Doctors', 'slug' => 'manage-doctors', 'group_name' => 'doctors'],
-            ['name' => 'View Doctor Statements', 'slug' => 'view-doctor-statements', 'group_name' => 'doctors'],
-            ['name' => 'Manage Doctor Payments', 'slug' => 'manage-doctor-payments', 'group_name' => 'doctors'],
-
-            ['name' => 'Manage Procedures', 'slug' => 'manage-procedures', 'group_name' => 'procedures'],
-            ['name' => 'Manage Operations', 'slug' => 'manage-operations', 'group_name' => 'operations'],
-
-            ['name' => 'Manage Invoices', 'slug' => 'manage-invoices', 'group_name' => 'invoices'],
-            ['name' => 'Print Invoices', 'slug' => 'print-invoices', 'group_name' => 'invoices'],
-            ['name' => 'Manage Payments', 'slug' => 'manage-payments', 'group_name' => 'payments'],
-
-            ['name' => 'Manage Suppliers', 'slug' => 'manage-suppliers', 'group_name' => 'suppliers'],
-            ['name' => 'Manage Supplier Invoices', 'slug' => 'manage-supplier-invoices', 'group_name' => 'suppliers'],
-            ['name' => 'Manage Supplier Payments', 'slug' => 'manage-supplier-payments', 'group_name' => 'suppliers'],
-            ['name' => 'View Supplier Statements', 'slug' => 'view-supplier-statements', 'group_name' => 'suppliers'],
-
-            ['name' => 'Manage Inventory Items', 'slug' => 'manage-inventory-items', 'group_name' => 'inventory'],
-            ['name' => 'Manage Stock Movements', 'slug' => 'manage-stock-movements', 'group_name' => 'inventory'],
-            ['name' => 'View Inventory Reports', 'slug' => 'view-inventory-reports', 'group_name' => 'inventory'],
-
-            ['name' => 'Manage Employees', 'slug' => 'manage-employees', 'group_name' => 'hr'],
-            ['name' => 'Manage Attendance', 'slug' => 'manage-attendance', 'group_name' => 'hr'],
-            ['name' => 'Manage Leave Requests', 'slug' => 'manage-leave-requests', 'group_name' => 'hr'],
-            ['name' => 'View Attendance Reports', 'slug' => 'view-attendance-reports', 'group_name' => 'hr'],
-            ['name' => 'Manage Payroll', 'slug' => 'manage-payroll', 'group_name' => 'hr'],
-            ['name' => 'View Payroll', 'slug' => 'view-payroll', 'group_name' => 'hr'],
-
-            ['name' => 'Manage Accounts', 'slug' => 'manage-accounts', 'group_name' => 'accounting'],
-            ['name' => 'Manage Journal Entries', 'slug' => 'manage-journal-entries', 'group_name' => 'accounting'],
-            ['name' => 'Manage Cash Vouchers', 'slug' => 'manage-cash-vouchers', 'group_name' => 'accounting'],
-            ['name' => 'Manage Bank Transactions', 'slug' => 'manage-bank-transactions', 'group_name' => 'accounting'],
-            ['name' => 'View Accounting Reports', 'slug' => 'view-accounting-reports', 'group_name' => 'accounting'],
-
-            ['name' => 'View Reports', 'slug' => 'view-reports', 'group_name' => 'reports'],
+        $roles = [
+            'admin',
+            'doctor',
+            'reception',
+            'accountant',
+            'hr',
+            'inventory',
         ];
 
-        foreach ($permissions as $permission) {
-            Permission::query()->updateOrCreate(
-                ['slug' => $permission['slug']],
-                $permission
-            );
+        $permissions = [
+            'view dashboard',
+
+            'view patients',
+            'create patients',
+            'edit patients',
+            'delete patients',
+
+            'view doctors',
+            'create doctors',
+            'edit doctors',
+            'delete doctors',
+
+            'view invoices',
+            'create invoices',
+            'edit invoices',
+            'delete invoices',
+
+            'view inventory',
+            'create inventory',
+            'edit inventory',
+            'delete inventory',
+
+            'view employees',
+            'create employees',
+            'edit employees',
+            'delete employees',
+        ];
+
+        foreach ($roles as $roleName) {
+            $role = DB::table('roles')->where('name', $roleName)->first();
+
+            $roleData = [
+                'name' => $roleName,
+            ];
+
+            if (Schema::hasColumn('roles', 'guard_name')) {
+                $roleData['guard_name'] = 'web';
+            }
+
+            if (Schema::hasColumn('roles', 'slug')) {
+                $roleData['slug'] = Str::slug($roleName);
+            }
+
+            if (Schema::hasColumn('roles', 'updated_at')) {
+                $roleData['updated_at'] = now();
+            }
+
+            if (! $role) {
+                if (Schema::hasColumn('roles', 'created_at')) {
+                    $roleData['created_at'] = now();
+                }
+
+                DB::table('roles')->insert($roleData);
+            } else {
+                DB::table('roles')->where('id', $role->id)->update($roleData);
+            }
         }
 
-        $manager = Role::query()->updateOrCreate(
-            ['slug' => 'manager'],
-            [
-                'name' => 'Manager',
-                'description' => 'Full system access',
-            ]
-        );
+        foreach ($permissions as $permissionName) {
+            $permission = DB::table('permissions')->where('name', $permissionName)->first();
 
-        $reception = Role::query()->updateOrCreate(
-            ['slug' => 'reception'],
-            [
-                'name' => 'Reception',
-                'description' => 'Daily operational access',
-            ]
-        );
+            $permissionData = [
+                'name' => $permissionName,
+            ];
 
-        $manager->permissions()->sync(Permission::query()->pluck('id')->all());
+            if (Schema::hasColumn('permissions', 'guard_name')) {
+                $permissionData['guard_name'] = 'web';
+            }
 
-        $receptionPermissionSlugs = [
-            'manage-patients',
-            'manage-invoices',
-            'print-invoices',
-            'manage-payments',
-            'manage-operations',
-            'view-doctor-statements',
-            'manage-suppliers',
-            'manage-supplier-invoices',
-            'manage-supplier-payments',
-            'view-supplier-statements',
-            'manage-inventory-items',
-            'manage-stock-movements',
-            'view-inventory-reports',
-            'manage-employees',
-            'manage-attendance',
-            'manage-leave-requests',
-            'view-attendance-reports',
-            'view-payroll',
-            'view-accounting-reports',
-        ];
+            if (Schema::hasColumn('permissions', 'slug')) {
+                $permissionData['slug'] = Str::slug($permissionName);
+            }
 
-        $receptionPermissionIds = Permission::query()
-            ->whereIn('slug', $receptionPermissionSlugs)
-            ->pluck('id')
-            ->all();
+            if (Schema::hasColumn('permissions', 'updated_at')) {
+                $permissionData['updated_at'] = now();
+            }
 
-        $reception->permissions()->sync($receptionPermissionIds);
+            if (! $permission) {
+                if (Schema::hasColumn('permissions', 'created_at')) {
+                    $permissionData['created_at'] = now();
+                }
+
+                DB::table('permissions')->insert($permissionData);
+            } else {
+                DB::table('permissions')->where('id', $permission->id)->update($permissionData);
+            }
+        }
+
+        $adminRole = DB::table('roles')->where('name', 'admin')->first();
+
+        if ($adminRole && Schema::hasTable('role_has_permissions')) {
+            $permissionIds = DB::table('permissions')->pluck('id');
+
+            foreach ($permissionIds as $permissionId) {
+                $exists = DB::table('role_has_permissions')
+                    ->where('permission_id', $permissionId)
+                    ->where('role_id', $adminRole->id)
+                    ->exists();
+
+                if (! $exists) {
+                    DB::table('role_has_permissions')->insert([
+                        'permission_id' => $permissionId,
+                        'role_id' => $adminRole->id,
+                    ]);
+                }
+            }
+        }
     }
 }

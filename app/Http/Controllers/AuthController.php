@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -10,17 +9,13 @@ use Illuminate\View\View;
 
 class AuthController extends Controller
 {
-    public function showLogin(): View
+    public function showLogin(): View|RedirectResponse
     {
-        $managerExists = User::query()
-            ->whereHas('role', function ($query) {
-                $query->where('slug', 'manager');
-            })
-            ->exists();
+        if (Auth::check()) {
+            return redirect()->intended('/dashboard');
+        }
 
-        return view('auth.login', [
-            'managerExists' => $managerExists,
-        ]);
+        return view('auth.login');
     }
 
     public function login(Request $request): RedirectResponse
@@ -30,29 +25,17 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        $remember = $request->boolean('remember');
-
-        if (! Auth::attempt($credentials, $remember)) {
+        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             return back()
                 ->withErrors([
-                    'email' => __('app.invalid_credentials'),
+                    'email' => 'بيانات الدخول غير صحيحة / Invalid credentials.',
                 ])
                 ->onlyInput('email');
         }
 
         $request->session()->regenerate();
 
-        if (! $request->user()->is_active) {
-            Auth::logout();
-
-            return back()
-                ->withErrors([
-                    'email' => __('app.user_inactive'),
-                ])
-                ->onlyInput('email');
-        }
-
-        return redirect()->route('dashboard')->with('success', __('app.login_success'));
+        return redirect()->intended('/dashboard');
     }
 
     public function logout(Request $request): RedirectResponse
@@ -62,6 +45,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login')->with('success', __('app.logout_success'));
+        return redirect('/login');
     }
 }

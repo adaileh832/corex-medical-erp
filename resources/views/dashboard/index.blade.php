@@ -1,339 +1,302 @@
-@extends('layouts.app')
-
-@section('content')
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoreX Dashboard | لوحة التحكم</title>
     <style>
-        .corex-dashboard-page {
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        .layout {
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            gap: 24px;
         }
 
-        .corex-hero-card,
-        .corex-panel,
-        .corex-stat-card,
-        .corex-action-card,
-        .corex-module-card {
-            border: none;
-            border-radius: 24px;
-            background: #ffffff;
-            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
-        }
-
-        .corex-hero-card {
-            padding: 28px;
-            background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%);
-            color: #ffffff;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .corex-hero-card::after {
-            content: '';
-            position: absolute;
-            inset-inline-end: -40px;
-            top: -30px;
-            width: 180px;
-            height: 180px;
-            background: rgba(255, 255, 255, 0.10);
-            border-radius: 50%;
-        }
-
-        .corex-hero-subtitle {
-            color: rgba(255, 255, 255, 0.82);
-            max-width: 720px;
-        }
-
-        .corex-chip {
-            display: inline-flex;
+        .topbar {
+            background: #0f172a;
+            color: #fff;
+            padding: 18px 24px;
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 8px;
-            padding: 8px 14px;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.14);
-            color: #ffffff;
-            font-size: 0.9rem;
-            font-weight: 600;
+            gap: 16px;
+            flex-wrap: wrap;
         }
 
-        .corex-grid {
-            display: grid;
-            grid-template-columns: repeat(12, minmax(0, 1fr));
-            gap: 20px;
+        .topbar h1 {
+            margin: 0;
+            font-size: 24px;
         }
 
-        .corex-col-8 { grid-column: span 8; }
-        .corex-col-4 { grid-column: span 4; }
-        .corex-col-6 { grid-column: span 6; }
-        .corex-col-12 { grid-column: span 12; }
+        .topbar p {
+            margin: 6px 0 0;
+            color: #cbd5e1;
+            font-size: 14px;
+        }
 
-        .corex-panel {
+        .topbar .user-box {
+            text-align: end;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1300px;
+            margin: 0 auto;
             padding: 24px;
         }
 
-        .corex-panel-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 6px;
-            color: #0f172a;
+        .grid {
+            display: grid;
+            gap: 18px;
         }
 
-        .corex-panel-text {
-            color: #64748b;
-            margin-bottom: 0;
+        .stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            margin-bottom: 24px;
         }
 
-        .corex-stat-card {
-            padding: 22px;
-            height: 100%;
+        .two-col {
+            grid-template-columns: 2fr 1fr;
         }
 
-        .corex-stat-top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 18px;
-        }
-
-        .corex-stat-icon {
-            width: 52px;
-            height: 52px;
+        .card {
+            background: #fff;
             border-radius: 16px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.35rem;
-            background: #eff6ff;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+            padding: 20px;
         }
 
-        .corex-stat-value {
-            font-size: 2rem;
-            font-weight: 800;
+        .card h2 {
+            margin: 0 0 8px;
+            font-size: 18px;
             color: #0f172a;
-            margin-bottom: 8px;
-            line-height: 1;
         }
 
-        .corex-stat-label {
-            font-size: 1rem;
-            font-weight: 700;
-            color: #0f172a;
-            margin-bottom: 6px;
-        }
-
-        .corex-stat-description {
+        .card p {
+            margin: 0;
             color: #64748b;
-            margin-bottom: 0;
+            line-height: 1.7;
         }
 
-        .corex-overview-list,
-        .corex-actions-list,
-        .corex-modules-list {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
+        .stat-title {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 10px;
         }
 
-        .corex-overview-item,
-        .corex-action-card,
-        .corex-module-card {
-            padding: 16px 18px;
-            border: 1px solid #e2e8f0;
+        .stat-value {
+            font-size: 30px;
+            font-weight: 700;
+            color: #111827;
         }
 
-        .corex-overview-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-radius: 18px;
-            background: #f8fafc;
+        .stat-sub {
+            margin-top: 8px;
+            font-size: 13px;
+            color: #94a3b8;
         }
 
-        .corex-overview-item strong {
-            color: #0f172a;
+        .actions {
+            display: grid;
+            gap: 12px;
+            margin-top: 16px;
         }
 
-        .corex-overview-value {
-            font-size: 1.1rem;
-            font-weight: 800;
-            color: #1d4ed8;
-        }
-
-        .corex-action-card {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 14px;
-            border-radius: 18px;
+        .action-link {
+            display: block;
             text-decoration: none;
-            transition: all 0.2s ease;
-            color: inherit;
-        }
-
-        .corex-action-card:hover {
-            transform: translateY(-2px);
-            border-color: #93c5fd;
-            box-shadow: 0 10px 24px rgba(29, 78, 216, 0.10);
-        }
-
-        .corex-action-label {
-            font-weight: 700;
-            color: #0f172a;
-        }
-
-        .corex-action-arrow {
-            font-size: 1.2rem;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
             color: #1d4ed8;
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-weight: 700;
         }
 
-        .corex-module-card {
-            border-radius: 20px;
-            height: 100%;
+        .action-link:hover {
+            background: #dbeafe;
         }
 
-        .corex-module-title {
-            font-size: 1rem;
-            font-weight: 800;
-            color: #0f172a;
-            margin-bottom: 8px;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 14px;
         }
 
-        .corex-module-description {
-            color: #64748b;
-            margin-bottom: 0;
+        th, td {
+            padding: 12px 10px;
+            text-align: start;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
         }
 
-        .corex-notes-box {
-            border-radius: 20px;
-            background: #f8fafc;
-            border: 1px dashed #cbd5e1;
-            padding: 18px;
+        th {
             color: #475569;
+            background: #f8fafc;
         }
 
-        .tone-primary .corex-stat-icon { background: #dbeafe; }
-        .tone-success .corex-stat-icon { background: #dcfce7; }
-        .tone-warning .corex-stat-icon { background: #fef3c7; }
-        .tone-danger .corex-stat-icon { background: #fee2e2; }
-        .tone-info .corex-stat-icon { background: #cffafe; }
-        .tone-secondary .corex-stat-icon { background: #e2e8f0; }
+        .badge {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            background: #eef2ff;
+            color: #4338ca;
+        }
 
-        @media (max-width: 991.98px) {
-            .corex-col-8,
-            .corex-col-4,
-            .corex-col-6,
-            .corex-col-12 {
-                grid-column: span 12;
+        .logout-form {
+            margin: 0;
+        }
+
+        .logout-btn {
+            border: none;
+            background: #dc2626;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .logout-btn:hover {
+            background: #b91c1c;
+        }
+
+        @media (max-width: 900px) {
+            .two-col {
+                grid-template-columns: 1fr;
             }
         }
     </style>
+</head>
+<body>
+<div class="layout">
+    <div class="topbar">
+        <div>
+            <h1>CoreX Medical ERP</h1>
+            <p>لوحة التحكم الرئيسية / Main Dashboard</p>
+        </div>
 
-    <div class="corex-dashboard-page">
-        <section class="corex-hero-card">
-            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 position-relative">
-                <div>
-                    <h1 class="mb-2">{{ __('app.dashboard') }} - CoreX Medical ERP</h1>
-                    <p class="corex-hero-subtitle mb-0">
-                        {{ __('app.dashboard_welcome') }}, {{ auth()->user()->name }}.
-                        لوحة متابعة تشغيلية حديثة تساعدك على إدارة المرضى، الأطباء، الفواتير، العمليات، المخزون، والموارد البشرية من مكان واحد.
-                    </p>
-                </div>
-
-                <div class="d-flex flex-wrap gap-2">
-                    <span class="corex-chip">{{ __('app.current_role') }}</span>
-                    <span class="corex-chip">CoreX</span>
-                </div>
-            </div>
-        </section>
-
-        <section class="corex-grid">
-            <div class="corex-col-8">
-                <div class="corex-panel">
-                    <div class="mb-4">
-                        <h2 class="corex-panel-title">Overview / ملخص عام</h2>
-                        <p class="corex-panel-text">مؤشرات سريعة عن أهم وحدات النظام الحالية.</p>
-                    </div>
-
-                    <div class="row g-4">
-                        @foreach ($stats as $stat)
-                            <div class="col-md-6 col-xl-4">
-                                <div class="corex-stat-card tone-{{ $stat['tone'] }}">
-                                    <div class="corex-stat-top">
-                                        <span class="corex-stat-icon">{{ $stat['icon'] }}</span>
-                                    </div>
-                                    <div class="corex-stat-value">{{ number_format($stat['value']) }}</div>
-                                    <div class="corex-stat-label">{{ $stat['label'] }}</div>
-                                    <p class="corex-stat-description">{{ $stat['description'] }}</p>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
+        <div class="user-box">
+            <div style="margin-bottom: 10px;">
+                {{ $currentUser?->name ?? 'User' }}<br>
+                <span style="color:#cbd5e1; font-size:13px;">
+                    {{ $currentUser?->email ?? '---' }}
+                </span>
             </div>
 
-            <div class="corex-col-4">
-                <div class="corex-panel h-100">
-                    <div class="mb-4">
-                        <h2 class="corex-panel-title">System Snapshot / نظرة سريعة</h2>
-                        <p class="corex-panel-text">أرقام إدارية وتشغيلية أساسية للنظام.</p>
-                    </div>
-
-                    <div class="corex-overview-list">
-                        @foreach ($systemOverview as $item)
-                            <div class="corex-overview-item">
-                                <strong>{{ $item['label'] }}</strong>
-                                <span class="corex-overview-value">{{ number_format($item['value']) }}</span>
-                            </div>
-                        @endforeach
-                    </div>
-
-                    <div class="corex-notes-box mt-4">
-                        <strong>Next Step / الخطوة التالية:</strong>
-                        تحسين الـ layout العام وتحويله إلى SaaS layout أوضح وأسهل.
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="corex-grid">
-            <div class="corex-col-6">
-                <div class="corex-panel h-100">
-                    <div class="mb-4">
-                        <h2 class="corex-panel-title">Quick Actions / إجراءات سريعة</h2>
-                        <p class="corex-panel-text">اختصارات مباشرة لأكثر العمليات استخدامًا.</p>
-                    </div>
-
-                    <div class="corex-actions-list">
-                        @foreach ($quickActions as $action)
-                            @if(auth()->user()->hasPermission($action['permission']))
-                                <a href="{{ $action['route'] }}" class="corex-action-card">
-                                    <span class="corex-action-label">{{ $action['label'] }}</span>
-                                    <span class="corex-action-arrow">→</span>
-                                </a>
-                            @endif
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-
-            <div class="corex-col-6">
-                <div class="corex-panel h-100">
-                    <div class="mb-4">
-                        <h2 class="corex-panel-title">Core Modules / الوحدات الأساسية</h2>
-                        <p class="corex-panel-text">تنظيم أولي للوظائف الرئيسية داخل النظام.</p>
-                    </div>
-
-                    <div class="row g-3">
-                        @foreach ($modules as $module)
-                            <div class="col-md-6">
-                                <div class="corex-module-card">
-                                    <div class="corex-module-title">{{ $module['title'] }}</div>
-                                    <p class="corex-module-description">{{ $module['description'] }}</p>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-        </section>
+            <form method="POST" action="{{ url('/logout') }}" class="logout-form">
+                @csrf
+                <button type="submit" class="logout-btn">تسجيل الخروج / Logout</button>
+            </form>
+        </div>
     </div>
-@endsection
+
+    <div class="container">
+        <div class="grid stats-grid">
+            <div class="card">
+                <div class="stat-title">المرضى / Patients</div>
+                <div class="stat-value">{{ $stats['patients'] }}</div>
+                <div class="stat-sub">إجمالي المرضى المسجلين</div>
+            </div>
+
+            <div class="card">
+                <div class="stat-title">الأطباء / Doctors</div>
+                <div class="stat-value">{{ $stats['doctors'] }}</div>
+                <div class="stat-sub">إجمالي الأطباء في النظام</div>
+            </div>
+
+            <div class="card">
+                <div class="stat-title">الفواتير / Invoices</div>
+                <div class="stat-value">{{ $stats['invoices'] }}</div>
+                <div class="stat-sub">عدد الفواتير الحالية</div>
+            </div>
+
+            <div class="card">
+                <div class="stat-title">المستخدمون / Users</div>
+                <div class="stat-value">{{ $stats['users'] }}</div>
+                <div class="stat-sub">حسابات المستخدمين</div>
+            </div>
+
+            <div class="card">
+                <div class="stat-title">المدفوعات / Payments</div>
+                <div class="stat-value">{{ $stats['payments'] }}</div>
+                <div class="stat-sub">عدد المدفوعات المسجلة</div>
+            </div>
+
+            <div class="card">
+                <div class="stat-title">الموظفون / Employees</div>
+                <div class="stat-value">{{ $stats['employees'] }}</div>
+                <div class="stat-sub">إجمالي الموظفين</div>
+            </div>
+        </div>
+
+        <div class="grid two-col">
+            <div class="card">
+                <h2>آخر الفواتير / Recent Invoices</h2>
+                <p>عرض مختصر لآخر الفواتير داخل النظام.</p>
+
+                <table>
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>رقم الفاتورة / Invoice</th>
+                        <th>الإجمالي / Total</th>
+                        <th>المدفوع / Paid</th>
+                        <th>الحالة / Status</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @forelse ($recentInvoices as $index => $invoice)
+                        <tr>
+                            <td>{{ $index + 1 }}</td>
+                            <td>{{ $invoice->invoice_number ?? ('INV-' . $invoice->id) }}</td>
+                            <td>{{ number_format((float) ($invoice->total ?? 0), 2) }}</td>
+                            <td>{{ number_format((float) ($invoice->paid_amount ?? 0), 2) }}</td>
+                            <td>
+                                <span class="badge">
+                                    {{ $invoice->status ?? 'N/A' }}
+                                </span>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5">لا توجد فواتير حتى الآن / No invoices found.</td>
+                        </tr>
+                    @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h2>إجراءات سريعة / Quick Actions</h2>
+                <p>روابط سريعة للخطوات القادمة داخل CoreX.</p>
+
+                <div class="actions">
+                    <a href="{{ url('/dashboard') }}" class="action-link">العودة للوحة التحكم / Refresh Dashboard</a>
+                    <a href="{{ url('/login') }}" class="action-link">صفحة الدخول / Login Page</a>
+                </div>
+
+                <div style="margin-top: 22px;">
+                    <h2>ملخص مالي / Financial Summary</h2>
+                    <p style="margin-top: 10px;">إجمالي الفواتير: <strong>{{ number_format($financial['invoice_total'], 2) }}</strong></p>
+                    <p style="margin-top: 10px;">إجمالي المدفوع من الفواتير: <strong>{{ number_format($financial['paid_total'], 2) }}</strong></p>
+                    <p style="margin-top: 10px;">إجمالي المدفوعات: <strong>{{ number_format($financial['payments_total'], 2) }}</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

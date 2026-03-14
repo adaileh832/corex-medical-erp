@@ -1,158 +1,235 @@
 <!DOCTYPE html>
-<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ __('app.login') }} - CoreX Medical ERP</title>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap{{ app()->getLocale() === 'ar' ? '.rtl' : '' }}.min.css" rel="stylesheet">
+    <title>{{ config('app.name', 'CoreX Medical ERP') }} - Login | تسجيل الدخول</title>
     <style>
         body {
-            min-height: 100vh;
             margin: 0;
-            background: linear-gradient(135deg, #edf4ff 0%, #f7faff 45%, #eef2ff 100%);
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        .page-wrapper {
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: Tahoma, Arial, sans-serif;
-            color: #172033;
-        }
-
-        .login-shell {
-            width: 100%;
-            max-width: 520px;
-            padding: 20px;
+            padding: 24px;
         }
 
         .login-card {
-            border: 1px solid rgba(37, 99, 235, 0.08);
-            border-radius: 24px;
-            box-shadow: 0 18px 60px rgba(15, 23, 42, 0.12);
-            backdrop-filter: blur(10px);
+            width: 100%;
+            max-width: 460px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            padding: 32px;
         }
 
-        .language-switch .btn {
-            min-width: 48px;
-            border-radius: 12px;
+        .brand {
+            text-align: center;
+            margin-bottom: 24px;
         }
 
-        .brand-logo {
-            max-height: 76px;
-            width: auto;
-            object-fit: contain;
+        .brand h1 {
+            margin: 0 0 8px;
+            font-size: 28px;
+            color: #0f172a;
         }
 
-        .brand-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 12px;
-            border-radius: 999px;
-            background: rgba(37, 99, 235, 0.08);
-            color: #1d4ed8;
-            font-size: 13px;
+        .brand p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .alert {
+            padding: 12px 14px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .alert-danger {
+            background: #fef2f2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-success {
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #a7f3d0;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
             font-weight: 700;
+            font-size: 14px;
         }
 
         .form-control {
-            border-radius: 14px;
+            width: 100%;
+            box-sizing: border-box;
             padding: 12px 14px;
-            border-color: #d8e1f0;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+            transition: 0.2s ease;
+            background: #fff;
         }
 
         .form-control:focus {
-            border-color: #6ea8fe;
-            box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.12);
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        .form-check {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .form-check label {
+            font-size: 14px;
+            color: #374151;
         }
 
         .btn {
-            border-radius: 14px;
-            padding: 11px 16px;
-            font-weight: 600;
+            width: 100%;
+            border: none;
+            border-radius: 10px;
+            padding: 13px 16px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            background: #2563eb;
+            color: white;
+            transition: 0.2s ease;
         }
 
-        .setup-manager-btn {
-            text-decoration: none;
+        .btn:hover {
+            background: #1d4ed8;
         }
 
-        .support-text {
-            font-size: 0.92rem;
+        .helper-box {
+            margin-top: 22px;
+            padding: 14px;
+            border-radius: 10px;
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            font-size: 13px;
+            line-height: 1.8;
+            color: #475569;
+        }
+
+        .helper-box strong {
+            color: #0f172a;
+        }
+
+        .text-danger {
+            color: #dc2626;
+            font-size: 13px;
+            margin-top: 6px;
+            display: block;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 18px;
+            font-size: 12px;
+            color: #94a3b8;
         }
     </style>
 </head>
 <body>
-    @php
-        $settings = \App\Models\Setting::query()->pluck('value', 'key');
-        $logoUrl = !empty($settings['logo']) ? asset('storage/' . $settings['logo']) : null;
-        $hospitalName = app()->getLocale() === 'ar'
-            ? ($settings['hospital_name'] ?? 'CoreX Medical ERP')
-            : ($settings['hospital_name_en'] ?? 'CoreX Medical ERP');
-    @endphp
+    <div class="page-wrapper">
+        <div class="login-card">
+            <div class="brand">
+                <h1>CoreX Medical ERP</h1>
+                <p>تسجيل الدخول إلى كور إكس الطبي<br>Login to CoreX Medical ERP</p>
+            </div>
 
-    <div class="login-shell">
-        <div class="card login-card p-4 p-md-5">
-            <div class="d-flex justify-content-between align-items-center gap-3 mb-4">
-                <span class="brand-badge">CoreX Medical ERP</span>
-
-                <div class="language-switch d-flex gap-2">
-                    <a href="{{ route('locale.switch', 'ar') }}" class="btn btn-sm btn-outline-secondary">AR</a>
-                    <a href="{{ route('locale.switch', 'en') }}" class="btn btn-sm btn-outline-secondary">EN</a>
+            @if (session('status'))
+                <div class="alert alert-success">
+                    {{ session('status') }}
                 </div>
-            </div>
-
-            <div class="text-center mb-4">
-                @if($logoUrl)
-                    <img src="{{ $logoUrl }}" alt="Logo" class="brand-logo mb-3">
-                @endif
-                <h1 class="h2 mb-2">{{ $hospitalName }}</h1>
-                <p class="text-muted mb-0 support-text">{{ __('app.login_subtitle') }}</p>
-            </div>
-
-            @if(session('success'))
-                <div class="alert alert-success rounded-4">{{ session('success') }}</div>
             @endif
 
-            @if($errors->any())
-                <div class="alert alert-danger rounded-4">
-                    <ul class="mb-0 ps-3">
-                        @foreach($errors->all() as $error)
+            @if ($errors->any())
+                <div class="alert alert-danger">
+                    <strong>حدث خطأ / An error occurred:</strong>
+                    <ul style="margin: 8px 0 0; padding-inline-start: 18px;">
+                        @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach
                     </ul>
                 </div>
             @endif
 
-            <form action="{{ route('login.submit') }}" method="POST" class="mt-4">
+            <form method="POST" action="{{ url('/login') }}">
                 @csrf
 
-                <div class="mb-3">
-                    <label for="email" class="form-label fw-semibold">{{ __('app.email') }}</label>
-                    <input id="email" type="email" name="email" class="form-control" value="{{ old('email') }}" required autofocus>
+                <div class="form-group">
+                    <label for="email" class="form-label">البريد الإلكتروني / Email</label>
+                    <input
+                        id="email"
+                        type="email"
+                        name="email"
+                        class="form-control"
+                        value="{{ old('email') }}"
+                        required
+                        autofocus
+                    >
+                    @error('email')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
                 </div>
 
-                <div class="mb-3">
-                    <label for="password" class="form-label fw-semibold">{{ __('app.password') }}</label>
-                    <input id="password" type="password" name="password" class="form-control" required>
+                <div class="form-group">
+                    <label for="password" class="form-label">كلمة المرور / Password</label>
+                    <input
+                        id="password"
+                        type="password"
+                        name="password"
+                        class="form-control"
+                        required
+                    >
+                    @error('password')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
                 </div>
 
-                <div class="form-check mb-4">
-                    <input type="checkbox" name="remember" class="form-check-input" id="remember">
-                    <label for="remember" class="form-check-label">{{ __('app.remember_me') }}</label>
+                <div class="form-check">
+                    <input type="checkbox" name="remember" id="remember" value="1">
+                    <label for="remember">تذكرني / Remember me</label>
                 </div>
 
-                <button type="submit" class="btn btn-primary w-100">
-                    {{ __('app.login') }}
+                <button type="submit" class="btn">
+                    دخول / Login
                 </button>
             </form>
 
-            @if(!$managerExists)
-                <div class="text-center mt-4 pt-3 border-top">
-                    <p class="text-muted support-text mb-3">{{ __('app.first_time_setup_hint') }}</p>
-                    <a href="{{ route('setup.manager') }}" class="btn btn-dark w-100 setup-manager-btn">
-                        {{ __('app.create_system_manager') }}
-                    </a>
-                </div>
-            @endif
+            <div class="helper-box">
+                <strong>بيانات الدخول الحالية / Current login credentials</strong><br>
+                Email: admin@corex.local<br>
+                Password: Admin@12345
+            </div>
+
+            <div class="footer-note">
+                CoreX Medical ERP / كور إكس الطبي
+            </div>
         </div>
     </div>
 </body>
