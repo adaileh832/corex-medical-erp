@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\DoctorPaymentController;
 use App\Http\Controllers\DoctorStatementController;
+use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\InventoryItemController;
 use App\Http\Controllers\InventoryReportController;
 use App\Http\Controllers\InvoiceController;
@@ -12,6 +14,7 @@ use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\OperationController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\ProcedureController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SetupController;
@@ -152,6 +155,31 @@ Route::middleware('auth')->group(function () {
         Route::get('/inventory-reports/stock-summary', [InventoryReportController::class, 'stockSummary'])->name('inventory-reports.stock-summary');
         Route::get('/inventory-reports/low-stock', [InventoryReportController::class, 'lowStock'])->name('inventory-reports.low-stock');
         Route::get('/inventory-reports/movement-report', [InventoryReportController::class, 'movementReport'])->name('inventory-reports.movement-report');
+    });
+
+    Route::middleware('permission:manage-employees')->group(function () {
+        Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
+        Route::get('/employees/create', [EmployeeController::class, 'create'])->name('employees.create');
+        Route::post('/employees', [EmployeeController::class, 'store'])->name('employees.store');
+        Route::get('/employees/{employee}/edit', [EmployeeController::class, 'edit'])->name('employees.edit');
+        Route::put('/employees/{employee}', [EmployeeController::class, 'update'])->name('employees.update');
+        Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('employees.destroy');
+    });
+
+    Route::middleware('permission:manage-attendance')->group(function () {
+        Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
+        Route::get('/attendance/create', [AttendanceController::class, 'create'])->name('attendance.create');
+        Route::post('/attendance', [AttendanceController::class, 'store'])->name('attendance.store');
+    });
+
+    Route::middleware('permission:view-payroll')->group(function () {
+        Route::get('/payrolls', [PayrollController::class, 'index'])->name('payrolls.index');
+        Route::get('/payrolls/{payroll}', [PayrollController::class, 'show'])->name('payrolls.show');
+    });
+
+    Route::middleware('permission:manage-payroll')->group(function () {
+        Route::get('/payrolls/create', [PayrollController::class, 'create'])->name('payrolls.create');
+        Route::post('/payrolls', [PayrollController::class, 'store'])->name('payrolls.store');
     });
 
     Route::middleware('role:manager')->group(function () {

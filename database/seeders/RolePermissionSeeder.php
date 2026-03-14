@@ -38,6 +38,11 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'Manage Stock Movements', 'slug' => 'manage-stock-movements', 'group_name' => 'inventory'],
             ['name' => 'View Inventory Reports', 'slug' => 'view-inventory-reports', 'group_name' => 'inventory'],
 
+            ['name' => 'Manage Employees', 'slug' => 'manage-employees', 'group_name' => 'hr'],
+            ['name' => 'Manage Attendance', 'slug' => 'manage-attendance', 'group_name' => 'hr'],
+            ['name' => 'Manage Payroll', 'slug' => 'manage-payroll', 'group_name' => 'hr'],
+            ['name' => 'View Payroll', 'slug' => 'view-payroll', 'group_name' => 'hr'],
+
             ['name' => 'View Accounting', 'slug' => 'view-accounting', 'group_name' => 'accounting'],
             ['name' => 'Manage Accounting', 'slug' => 'manage-accounting', 'group_name' => 'accounting'],
 
@@ -83,6 +88,9 @@ class RolePermissionSeeder extends Seeder
             'manage-inventory-items',
             'manage-stock-movements',
             'view-inventory-reports',
+            'manage-employees',
+            'manage-attendance',
+            'view-payroll',
         ];
 
         $receptionPermissionIds = Permission::query()

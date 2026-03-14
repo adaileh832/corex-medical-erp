@@ -95,6 +95,15 @@
                         <a href="{{ route('inventory-items.index') }}" class="btn btn-sm btn-outline-success">{{ __('app.inventory') }}</a>
                     @endif
 
+                    @if(
+                        auth()->user()->hasPermission('manage-employees') ||
+                        auth()->user()->hasPermission('manage-attendance') ||
+                        auth()->user()->hasPermission('view-payroll') ||
+                        auth()->user()->hasPermission('manage-payroll')
+                    )
+                        <a href="{{ route('employees.index') }}" class="btn btn-sm btn-outline-dark">{{ __('app.hr') }}</a>
+                    @endif
+
                     @if(auth()->user()->hasPermission('view-doctor-statements'))
                         <a href="{{ route('doctor-statements.index') }}" class="btn btn-sm btn-outline-danger">{{ __('app.doctor_statements') }}</a>
                     @endif
