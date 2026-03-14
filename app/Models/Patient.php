@@ -9,17 +9,25 @@ class Patient extends Model
 {
     use HasFactory;
 
+    protected $table = 'patients';
+
     protected $fillable = [
-        'created_by',
         'name',
+        'full_name',
         'phone',
-        'identity_number',
+        'email',
+        'gender',
+        'date_of_birth',
         'address',
         'notes',
     ];
 
-    public function creator()
+    protected $casts = [
+        'date_of_birth' => 'date',
+    ];
+
+    public function getDisplayNameAttribute(): string
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->full_name ?: ($this->name ?? '-');
     }
 }

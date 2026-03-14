@@ -50,7 +50,6 @@ Route::middleware('guest')->group(function () {
         Route::post('/manager', [SetupController::class, 'storeManager'])->name('manager.store');
     });
 
-    // Legacy and friendly aliases for first-time manager setup.
     Route::redirect('/create-system-manager', '/setup/manager', 302)->name('setup.manager.alias');
     Route::redirect('/register-manager', '/setup/manager', 302)->name('setup.manager.legacy');
 });
@@ -59,14 +58,19 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::middleware('permission:manage-patients')->group(function () {
-        Route::get('/patients', [PatientController::class, 'index'])->name('patients.index');
-        Route::get('/patients/create', [PatientController::class, 'create'])->name('patients.create');
-        Route::post('/patients', [PatientController::class, 'store'])->name('patients.store');
-        Route::get('/patients/{patient}/edit', [PatientController::class, 'edit'])->name('patients.edit');
-        Route::put('/patients/{patient}', [PatientController::class, 'update'])->name('patients.update');
-        Route::delete('/patients/{patient}', [PatientController::class, 'destroy'])->name('patients.destroy');
-    });
+    /*
+    |--------------------------------------------------------------------------
+    | CoreX Patients Module
+    | وحدة المرضى - مثبتة مؤقتًا تحت auth فقط حتى نكمل الصلاحيات لاحقًا
+    |--------------------------------------------------------------------------
+    */
+   Route::get('/patients', [PatientController::class, 'index'])->name('patients.index');
+Route::get('/patients/create', [PatientController::class, 'create'])->name('patients.create');
+Route::post('/patients', [PatientController::class, 'store'])->name('patients.store');
+Route::get('/patients/{patient}', [PatientController::class, 'show'])->name('patients.show');
+Route::get('/patients/{patient}/edit', [PatientController::class, 'edit'])->name('patients.edit');
+Route::put('/patients/{patient}', [PatientController::class, 'update'])->name('patients.update');
+Route::delete('/patients/{patient}', [PatientController::class, 'destroy'])->name('patients.destroy');
 
     Route::middleware('permission:manage-doctors')->group(function () {
         Route::get('/doctors', [DoctorController::class, 'index'])->name('doctors.index');
