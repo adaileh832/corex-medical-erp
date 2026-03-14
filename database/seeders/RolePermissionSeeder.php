@@ -26,7 +26,6 @@ class RolePermissionSeeder extends Seeder
 
             ['name' => 'Manage Invoices', 'slug' => 'manage-invoices', 'group_name' => 'invoices'],
             ['name' => 'Print Invoices', 'slug' => 'print-invoices', 'group_name' => 'invoices'],
-
             ['name' => 'Manage Payments', 'slug' => 'manage-payments', 'group_name' => 'payments'],
 
             ['name' => 'Manage Suppliers', 'slug' => 'manage-suppliers', 'group_name' => 'suppliers'],
@@ -45,8 +44,11 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'Manage Payroll', 'slug' => 'manage-payroll', 'group_name' => 'hr'],
             ['name' => 'View Payroll', 'slug' => 'view-payroll', 'group_name' => 'hr'],
 
-            ['name' => 'View Accounting', 'slug' => 'view-accounting', 'group_name' => 'accounting'],
-            ['name' => 'Manage Accounting', 'slug' => 'manage-accounting', 'group_name' => 'accounting'],
+            ['name' => 'Manage Accounts', 'slug' => 'manage-accounts', 'group_name' => 'accounting'],
+            ['name' => 'Manage Journal Entries', 'slug' => 'manage-journal-entries', 'group_name' => 'accounting'],
+            ['name' => 'Manage Cash Vouchers', 'slug' => 'manage-cash-vouchers', 'group_name' => 'accounting'],
+            ['name' => 'Manage Bank Transactions', 'slug' => 'manage-bank-transactions', 'group_name' => 'accounting'],
+            ['name' => 'View Accounting Reports', 'slug' => 'view-accounting-reports', 'group_name' => 'accounting'],
 
             ['name' => 'View Reports', 'slug' => 'view-reports', 'group_name' => 'reports'],
         ];
@@ -95,6 +97,7 @@ class RolePermissionSeeder extends Seeder
             'manage-leave-requests',
             'view-attendance-reports',
             'view-payroll',
+            'view-accounting-reports',
         ];
 
         $receptionPermissionIds = Permission::query()

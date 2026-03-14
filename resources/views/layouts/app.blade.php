@@ -83,12 +83,14 @@
                         <a href="{{ route('employees.index') }}" class="btn btn-sm btn-outline-dark">{{ __('app.hr') }}</a>
                     @endif
 
-                    @if(auth()->user()->hasPermission('view-doctor-statements'))
-                        <a href="{{ route('doctor-statements.index') }}" class="btn btn-sm btn-outline-danger">{{ __('app.doctor_statements') }}</a>
-                    @endif
-
-                    @if(auth()->user()->hasPermission('view-supplier-statements'))
-                        <a href="{{ route('supplier-statements.index') }}" class="btn btn-sm btn-outline-dark">{{ __('app.supplier_statements') }}</a>
+                    @if(
+                        auth()->user()->hasPermission('manage-accounts') ||
+                        auth()->user()->hasPermission('manage-journal-entries') ||
+                        auth()->user()->hasPermission('manage-cash-vouchers') ||
+                        auth()->user()->hasPermission('manage-bank-transactions') ||
+                        auth()->user()->hasPermission('view-accounting-reports')
+                    )
+                        <a href="{{ route('accounts.index') }}" class="btn btn-sm btn-outline-danger">{{ __('app.accounting') }}</a>
                     @endif
 
                     <a href="{{ route('locale.switch', 'ar') }}" class="btn btn-sm btn-outline-secondary">AR</a>

@@ -1,8 +1,12 @@
 <?php
 
+use App\Http\Controllers\AccountController;
+use App\Http\Controllers\AccountingReportController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AttendanceReportController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BankTransactionController;
+use App\Http\Controllers\CashVoucherController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\DoctorPaymentController;
@@ -11,6 +15,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\InventoryItemController;
 use App\Http\Controllers\InventoryReportController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\JournalEntryController;
 use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\OperationController;
@@ -195,6 +200,39 @@ Route::middleware('auth')->group(function () {
     Route::middleware('permission:manage-payroll')->group(function () {
         Route::get('/payrolls/create', [PayrollController::class, 'create'])->name('payrolls.create');
         Route::post('/payrolls', [PayrollController::class, 'store'])->name('payrolls.store');
+    });
+
+    Route::middleware('permission:manage-accounts')->group(function () {
+        Route::get('/accounts', [AccountController::class, 'index'])->name('accounts.index');
+        Route::get('/accounts/create', [AccountController::class, 'create'])->name('accounts.create');
+        Route::post('/accounts', [AccountController::class, 'store'])->name('accounts.store');
+        Route::get('/accounts/{account}/edit', [AccountController::class, 'edit'])->name('accounts.edit');
+        Route::put('/accounts/{account}', [AccountController::class, 'update'])->name('accounts.update');
+        Route::delete('/accounts/{account}', [AccountController::class, 'destroy'])->name('accounts.destroy');
+    });
+
+    Route::middleware('permission:manage-journal-entries')->group(function () {
+        Route::get('/journal-entries', [JournalEntryController::class, 'index'])->name('journal-entries.index');
+        Route::get('/journal-entries/create', [JournalEntryController::class, 'create'])->name('journal-entries.create');
+        Route::post('/journal-entries', [JournalEntryController::class, 'store'])->name('journal-entries.store');
+        Route::get('/journal-entries/{journalEntry}', [JournalEntryController::class, 'show'])->name('journal-entries.show');
+    });
+
+    Route::middleware('permission:manage-cash-vouchers')->group(function () {
+        Route::get('/cash-vouchers', [CashVoucherController::class, 'index'])->name('cash-vouchers.index');
+        Route::get('/cash-vouchers/create', [CashVoucherController::class, 'create'])->name('cash-vouchers.create');
+        Route::post('/cash-vouchers', [CashVoucherController::class, 'store'])->name('cash-vouchers.store');
+    });
+
+    Route::middleware('permission:manage-bank-transactions')->group(function () {
+        Route::get('/bank-transactions', [BankTransactionController::class, 'index'])->name('bank-transactions.index');
+        Route::get('/bank-transactions/create', [BankTransactionController::class, 'create'])->name('bank-transactions.create');
+        Route::post('/bank-transactions', [BankTransactionController::class, 'store'])->name('bank-transactions.store');
+    });
+
+    Route::middleware('permission:view-accounting-reports')->group(function () {
+        Route::get('/accounting-reports/ledger', [AccountingReportController::class, 'ledger'])->name('accounting-reports.ledger');
+        Route::get('/accounting-reports/trial-balance', [AccountingReportController::class, 'trialBalance'])->name('accounting-reports.trial-balance');
     });
 
     Route::middleware('role:manager')->group(function () {
