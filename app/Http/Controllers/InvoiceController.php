@@ -2,129 +2,143 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Doctor;
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use App\Models\Patient;
 use App\Models\Procedure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 class InvoiceController extends Controller
 {
-    public function index(Request $request): View
+    public function index(): View
     {
-        $search = trim((string) $request->get('search'));
-        $dateFrom = $request->get('date_from');
-        $dateTo = $request->get('date_to');
-
         $invoices = Invoice::query()
-            ->with(['patient', 'doctor', 'procedure', 'payments', 'creator'])
-            ->when($search, function ($query) use ($search) {
-                $query->where(function ($subQuery) use ($search) {
-                    $subQuery->where('invoice_number', 'like', "%{$search}%")
-                        ->orWhere('service_name', 'like', "%{$search}%")
-                        ->orWhereHas('patient', fn ($q) => $q->where('name', 'like', "%{$search}%"))
-                        ->orWhereHas('doctor', fn ($q) => $q->where('name', 'like', "%{$search}%"))
-                        ->orWhereHas('procedure', fn ($q) => $q->where('name', 'like', "%{$search}%"));
-                });
-            })
-            ->when($dateFrom, fn ($query) => $query->whereDate('invoice_date', '>=', $dateFrom))
-            ->when($dateTo, fn ($query) => $query->whereDate('invoice_date', '<=', $dateTo))
-            ->latest('invoice_date')
-            ->latest('id')
-            ->paginate(10)
-            ->withQueryString();
+            ->with('patient')
+            ->latest()
+            ->paginate(10);
 
-        return view('invoices.index', compact('invoices', 'search', 'dateFrom', 'dateTo'));
+        return view('invoices.index', [
+            'invoices' => $invoices,
+        ]);
     }
 
     public function create(): View
     {
+        $patients = Patient::query()->orderBy('full_name')->get();
+        $procedures = Procedure::query()->orderBy('name')->get();
+
         return view('invoices.create', [
-            'patients' => Patient::query()->orderBy('name')->get(),
-            'doctors' => Doctor::query()->where('is_active', true)->orderBy('name')->get(),
-            'procedures' => Procedure::query()->where('is_active', true)->orderBy('name')->get(),
-            'nextInvoiceNumber' => $this->generateInvoiceNumber(),
+            'patients' => $patients,
+            'procedures' => $procedures,
+            'paymentMethods' => config('hospital.payment_methods', []),
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'invoice_number' => ['required', 'string', 'max:100', 'unique:invoices,invoice_number'],
             'patient_id' => ['required', 'exists:patients,id'],
-            'doctor_id' => ['nullable', 'exists:doctors,id'],
-            'procedure_id' => ['nullable', 'exists:procedures,id'],
-            'service_name' => ['required', 'string', 'max:255'],
-            'amount' => ['required', 'numeric', 'min:0'],
-            'invoice_date' => ['required', 'date'],
-            'status' => ['required', 'in:unpaid,partially_paid,paid'],
+            'discount' => ['nullable', 'numeric', 'min:0'],
+            'payment_method' => ['required', 'in:cash,cliq'],
+            'paid_amount' => ['nullable', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string'],
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.procedure_id' => ['required', 'exists:procedures,id'],
+            'items.*.quantity' => ['required', 'integer', 'min:1'],
+        ], [
+            'patient_id.required' => 'المريض مطلوب / Patient is required.',
+            'items.required' => 'يجب إضافة إجراء واحد على الأقل / At least one procedure is required.',
+            'payment_method.required' => 'طريقة الدفع مطلوبة / Payment method is required.',
         ]);
 
-        $validated['created_by'] = auth()->id();
+        DB::transaction(function () use ($validated) {
+            $discount = (float) ($validated['discount'] ?? 0);
+            $paidAmount = (float) ($validated['paid_amount'] ?? 0);
 
-        Invoice::create($validated);
+            $invoice = Invoice::create([
+                'invoice_number' => $this->generateInvoiceNumber(),
+                'patient_id' => $validated['patient_id'],
+                'subtotal' => 0,
+                'discount' => $discount,
+                'tax' => 0,
+                'total' => 0,
+                'paid_amount' => $paidAmount,
+                'status' => 'unpaid',
+                'notes' => $validated['notes'] ?? null,
+                'payment_method' => $validated['payment_method'],
+                'currency_code' => config('hospital.currency_code', 'JOD'),
+            ]);
+
+            $subtotal = 0;
+
+            foreach ($validated['items'] as $item) {
+                $procedure = Procedure::findOrFail($item['procedure_id']);
+                $quantity = (int) $item['quantity'];
+                $price = (float) $procedure->price;
+                $lineTotal = $price * $quantity;
+
+                InvoiceItem::create([
+                    'invoice_id' => $invoice->id,
+                    'procedure_id' => $procedure->id,
+                    'procedure_name' => $procedure->display_name,
+                    'price' => $price,
+                    'quantity' => $quantity,
+                    'line_total' => $lineTotal,
+                ]);
+
+                $subtotal += $lineTotal;
+            }
+
+            $total = max($subtotal - $discount, 0);
+
+            $status = 'unpaid';
+            if ($paidAmount > 0 && $paidAmount < $total) {
+                $status = 'partial';
+            } elseif ($paidAmount >= $total && $total > 0) {
+                $status = 'paid';
+            }
+
+            $invoice->update([
+                'subtotal' => $subtotal,
+                'total' => $total,
+                'status' => $status,
+            ]);
+        });
 
         return redirect()
             ->route('invoices.index')
-            ->with('success', __('app.invoice_created'));
+            ->with('success', 'تم إنشاء الفاتورة بنجاح / Invoice created successfully.');
     }
 
     public function show(Invoice $invoice): View
     {
-        $invoice->load(['patient', 'doctor', 'procedure', 'payments.creator', 'creator']);
+        $invoice->load(['patient', 'items']);
 
-        return view('invoices.show', compact('invoice'));
-    }
-
-    public function edit(Invoice $invoice): View
-    {
-        return view('invoices.edit', [
+        return view('invoices.show', [
             'invoice' => $invoice,
-            'patients' => Patient::query()->orderBy('name')->get(),
-            'doctors' => Doctor::query()->where('is_active', true)->orderBy('name')->get(),
-            'procedures' => Procedure::query()->where('is_active', true)->orderBy('name')->get(),
+            'paymentMethods' => config('hospital.payment_methods', []),
         ]);
-    }
-
-    public function update(Request $request, Invoice $invoice): RedirectResponse
-    {
-        $validated = $request->validate([
-            'invoice_number' => ['required', 'string', 'max:100', 'unique:invoices,invoice_number,' . $invoice->id],
-            'patient_id' => ['required', 'exists:patients,id'],
-            'doctor_id' => ['nullable', 'exists:doctors,id'],
-            'procedure_id' => ['nullable', 'exists:procedures,id'],
-            'service_name' => ['required', 'string', 'max:255'],
-            'amount' => ['required', 'numeric', 'min:0'],
-            'invoice_date' => ['required', 'date'],
-            'status' => ['required', 'in:unpaid,partially_paid,paid'],
-            'notes' => ['nullable', 'string'],
-        ]);
-
-        $invoice->update($validated);
-
-        return redirect()
-            ->route('invoices.index')
-            ->with('success', __('app.invoice_updated'));
     }
 
     public function destroy(Invoice $invoice): RedirectResponse
     {
-        $invoice->payments()->delete();
         $invoice->delete();
 
         return redirect()
             ->route('invoices.index')
-            ->with('success', __('app.invoice_deleted'));
+            ->with('success', 'تم حذف الفاتورة بنجاح / Invoice deleted successfully.');
     }
 
-    protected function generateInvoiceNumber(): string
+    private function generateInvoiceNumber(): string
     {
-        $lastInvoice = Invoice::query()->latest('id')->first();
-        $nextId = $lastInvoice ? ($lastInvoice->id + 1) : 1;
+        $prefix = 'INV-';
+        $datePart = now()->format('Ymd');
+        $count = Invoice::query()->count() + 1;
 
-        return 'INV-' . now()->format('Y') . '-' . str_pad((string) $nextId, 5, '0', STR_PAD_LEFT);
+        return $prefix . $datePart . '-' . str_pad((string) $count, 4, '0', STR_PAD_LEFT);
     }
 }

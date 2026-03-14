@@ -14,7 +14,6 @@ class Invoice extends Model
     protected $fillable = [
         'invoice_number',
         'patient_id',
-        'doctor_id',
         'subtotal',
         'discount',
         'tax',
@@ -22,22 +21,21 @@ class Invoice extends Model
         'paid_amount',
         'status',
         'notes',
+        'payment_method',
+        'currency_code',
     ];
 
-    /*
-    |--------------------------------------------------------------------------
-    | Relationships
-    |--------------------------------------------------------------------------
-    */
+    protected $casts = [
+        'subtotal' => 'decimal:2',
+        'discount' => 'decimal:2',
+        'tax' => 'decimal:2',
+        'total' => 'decimal:2',
+        'paid_amount' => 'decimal:2',
+    ];
 
     public function patient()
     {
         return $this->belongsTo(Patient::class);
-    }
-
-    public function doctor()
-    {
-        return $this->belongsTo(Doctor::class);
     }
 
     public function items()
@@ -45,19 +43,13 @@ class Invoice extends Model
         return $this->hasMany(InvoiceItem::class);
     }
 
-    public function payments()
+    public function getBalanceAttribute(): float
     {
-        return $this->hasMany(Payment::class);
+        return max((float) $this->total - (float) $this->paid_amount, 0);
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Accessors
-    |--------------------------------------------------------------------------
-    */
-
-    public function getBalanceAttribute()
+    public function getDisplayStatusAttribute(): string
     {
-        return $this->total - $this->paid_amount;
+        return $this->status ?: 'unpaid';
     }
 }

@@ -60,26 +60,38 @@ Route::middleware('auth')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
+    | CoreX Invoice Branding Preview
+    |--------------------------------------------------------------------------
+    */
+    Route::view('/invoices/branding-preview', 'invoices.branding-preview')->name('invoices.branding-preview');
+
+    /*
+    |--------------------------------------------------------------------------
     | CoreX Patients Module
     | وحدة المرضى - مثبتة مؤقتًا تحت auth فقط حتى نكمل الصلاحيات لاحقًا
     |--------------------------------------------------------------------------
     */
-   Route::get('/patients', [PatientController::class, 'index'])->name('patients.index');
-Route::get('/patients/create', [PatientController::class, 'create'])->name('patients.create');
-Route::post('/patients', [PatientController::class, 'store'])->name('patients.store');
-Route::get('/patients/{patient}', [PatientController::class, 'show'])->name('patients.show');
-Route::get('/patients/{patient}/edit', [PatientController::class, 'edit'])->name('patients.edit');
-Route::put('/patients/{patient}', [PatientController::class, 'update'])->name('patients.update');
-Route::delete('/patients/{patient}', [PatientController::class, 'destroy'])->name('patients.destroy');
+    Route::get('/patients', [PatientController::class, 'index'])->name('patients.index');
+    Route::get('/patients/create', [PatientController::class, 'create'])->name('patients.create');
+    Route::post('/patients', [PatientController::class, 'store'])->name('patients.store');
+    Route::get('/patients/{patient}', [PatientController::class, 'show'])->name('patients.show');
+    Route::get('/patients/{patient}/edit', [PatientController::class, 'edit'])->name('patients.edit');
+    Route::put('/patients/{patient}', [PatientController::class, 'update'])->name('patients.update');
+    Route::delete('/patients/{patient}', [PatientController::class, 'destroy'])->name('patients.destroy');
 
-    Route::middleware('permission:manage-doctors')->group(function () {
-        Route::get('/doctors', [DoctorController::class, 'index'])->name('doctors.index');
-        Route::get('/doctors/create', [DoctorController::class, 'create'])->name('doctors.create');
-        Route::post('/doctors', [DoctorController::class, 'store'])->name('doctors.store');
-        Route::get('/doctors/{doctor}/edit', [DoctorController::class, 'edit'])->name('doctors.edit');
-        Route::put('/doctors/{doctor}', [DoctorController::class, 'update'])->name('doctors.update');
-        Route::delete('/doctors/{doctor}', [DoctorController::class, 'destroy'])->name('doctors.destroy');
-    });
+    /*
+    |--------------------------------------------------------------------------
+    | CoreX Doctors Module
+    | وحدة الأطباء - مثبتة مؤقتًا تحت auth فقط حتى نكمل الصلاحيات لاحقًا
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/doctors', [DoctorController::class, 'index'])->name('doctors.index');
+    Route::get('/doctors/create', [DoctorController::class, 'create'])->name('doctors.create');
+    Route::post('/doctors', [DoctorController::class, 'store'])->name('doctors.store');
+    Route::get('/doctors/{doctor}', [DoctorController::class, 'show'])->name('doctors.show');
+    Route::get('/doctors/{doctor}/edit', [DoctorController::class, 'edit'])->name('doctors.edit');
+    Route::put('/doctors/{doctor}', [DoctorController::class, 'update'])->name('doctors.update');
+    Route::delete('/doctors/{doctor}', [DoctorController::class, 'destroy'])->name('doctors.destroy');
 
     /*
     |--------------------------------------------------------------------------
@@ -95,15 +107,17 @@ Route::delete('/patients/{patient}', [PatientController::class, 'destroy'])->nam
     Route::put('/procedures/{procedure}', [ProcedureController::class, 'update'])->name('procedures.update');
     Route::delete('/procedures/{procedure}', [ProcedureController::class, 'destroy'])->name('procedures.destroy');
 
-    Route::middleware('permission:manage-invoices')->group(function () {
-        Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index');
-        Route::get('/invoices/create', [InvoiceController::class, 'create'])->name('invoices.create');
-        Route::post('/invoices', [InvoiceController::class, 'store'])->name('invoices.store');
-        Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
-        Route::get('/invoices/{invoice}/edit', [InvoiceController::class, 'edit'])->name('invoices.edit');
-        Route::put('/invoices/{invoice}', [InvoiceController::class, 'update'])->name('invoices.update');
-        Route::delete('/invoices/{invoice}', [InvoiceController::class, 'destroy'])->name('invoices.destroy');
-    });
+    /*
+    |--------------------------------------------------------------------------
+    | CoreX Invoices Module
+    | وحدة الفواتير - مثبتة مؤقتًا تحت auth فقط حتى نكمل الصلاحيات لاحقًا
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index');
+    Route::get('/invoices/create', [InvoiceController::class, 'create'])->name('invoices.create');
+    Route::post('/invoices', [InvoiceController::class, 'store'])->name('invoices.store');
+    Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
+    Route::delete('/invoices/{invoice}', [InvoiceController::class, 'destroy'])->name('invoices.destroy');
 
     Route::middleware('permission:manage-payments')->group(function () {
         Route::get('/invoices/{invoice}/payments/create', [PaymentController::class, 'create'])->name('payments.create');
@@ -123,19 +137,11 @@ Route::delete('/patients/{patient}', [PatientController::class, 'destroy'])->nam
         Route::get('/doctor-statements', [DoctorStatementController::class, 'index'])->name('doctor-statements.index');
     });
 
-     /*
-    |--------------------------------------------------------------------------
-    | CoreX Doctors Module
-    | وحدة الأطباء - مثبتة مؤقتًا تحت auth فقط حتى نكمل الصلاحيات لاحقًا
-    |--------------------------------------------------------------------------
-    */
-    Route::get('/doctors', [DoctorController::class, 'index'])->name('doctors.index');
-    Route::get('/doctors/create', [DoctorController::class, 'create'])->name('doctors.create');
-    Route::post('/doctors', [DoctorController::class, 'store'])->name('doctors.store');
-    Route::get('/doctors/{doctor}', [DoctorController::class, 'show'])->name('doctors.show');
-    Route::get('/doctors/{doctor}/edit', [DoctorController::class, 'edit'])->name('doctors.edit');
-    Route::put('/doctors/{doctor}', [DoctorController::class, 'update'])->name('doctors.update');
-    Route::delete('/doctors/{doctor}', [DoctorController::class, 'destroy'])->name('doctors.destroy');
+    Route::middleware('permission:manage-doctor-payments')->group(function () {
+        Route::get('/doctors/{doctor}/payments/create', [DoctorPaymentController::class, 'create'])->name('doctor-payments.create');
+        Route::post('/doctors/{doctor}/payments', [DoctorPaymentController::class, 'store'])->name('doctor-payments.store');
+        Route::delete('/doctor-payments/{doctorPayment}', [DoctorPaymentController::class, 'destroy'])->name('doctor-payments.destroy');
+    });
 
     Route::middleware('permission:manage-suppliers')->group(function () {
         Route::get('/suppliers', [SupplierController::class, 'index'])->name('suppliers.index');

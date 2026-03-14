@@ -1,139 +1,220 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>عرض الفاتورة | Invoice</title>
+    <style>
+        @page { size: A4; margin: 18mm; }
 
-@section('content')
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
-        <div>
-            <h1 class="mb-1">{{ __('app.invoice_details') }}</h1>
-            <p class="text-muted mb-0">{{ $invoice->invoice_number }}</p>
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f3f4f6;
+            color: #111827;
+            padding: 24px;
+        }
+
+        .page {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.08);
+        }
+
+        .meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .meta-box {
+            background: #f8fafc;
+            padding: 14px;
+            border-radius: 12px;
+        }
+
+        .meta-label {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+
+        .meta-value {
+            font-size: 15px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+        }
+
+        th, td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: right;
+            font-size: 14px;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #475569;
+        }
+
+        .totals {
+            margin-top: 24px;
+            max-width: 380px;
+            margin-inline-start: auto;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .actions {
+            margin-top: 24px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            text-decoration: none;
+            border: none;
+            background: #2563eb;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-secondary {
+            background: #0f172a;
+        }
+
+        @media print {
+            body {
+                background: #fff;
+                padding: 0;
+            }
+
+            .page {
+                box-shadow: none;
+                border-radius: 0;
+                max-width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            .actions {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    @include('invoices.partials.header')
+
+    <div class="meta">
+        <div class="meta-box">
+            <div class="meta-label">رقم الفاتورة</div>
+            <div class="meta-value">{{ $invoice->invoice_number }}</div>
         </div>
 
-        <div class="mt-3 mt-md-0 d-flex gap-2">
-            @if(auth()->user()->hasPermission('manage-payments'))
-                <a href="{{ route('payments.create', $invoice) }}" class="btn btn-success">{{ __('app.add_payment') }}</a>
-            @endif
-            <a href="{{ route('invoices.edit', $invoice) }}" class="btn btn-warning text-dark">{{ __('app.edit') }}</a>
-            <a href="{{ route('invoices.index') }}" class="btn btn-secondary">{{ __('app.back') }}</a>
+        <div class="meta-box">
+            <div class="meta-label">التاريخ</div>
+            <div class="meta-value">{{ optional($invoice->created_at)->format('Y-m-d H:i') }}</div>
+        </div>
+
+        <div class="meta-box">
+            <div class="meta-label">المريض</div>
+            <div class="meta-value">{{ $invoice->patient?->display_name ?? '-' }}</div>
+        </div>
+
+        <div class="meta-box">
+            <div class="meta-label">طريقة الدفع</div>
+            <div class="meta-value">{{ config('hospital.payment_methods.' . $invoice->payment_method, $invoice->payment_method ?? '-') }}</div>
         </div>
     </div>
 
-    <div class="row g-4 mb-4">
-        <div class="col-md-4">
-            <div class="summary-box">
-                <div class="text-muted">{{ __('app.amount') }}</div>
-                <h4 class="mb-0">{{ number_format((float) $invoice->amount, 2) }}</h4>
-            </div>
+    <table>
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>الإجراء</th>
+            <th>السعر</th>
+            <th>الكمية</th>
+            <th>الإجمالي</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach($invoice->items as $index => $item)
+            <tr>
+                <td>{{ $index + 1 }}</td>
+                <td>{{ $item->procedure_name }}</td>
+                <td>{{ number_format((float)$item->price, 2) }} {{ config('hospital.currency_symbol_ar') }}</td>
+                <td>{{ $item->quantity }}</td>
+                <td>{{ number_format((float)$item->line_total, 2) }} {{ config('hospital.currency_symbol_ar') }}</td>
+            </tr>
+        @endforeach
+        </tbody>
+    </table>
+
+    <div class="totals">
+        <div class="total-row">
+            <strong>المجموع الفرعي</strong>
+            <span>{{ number_format((float)$invoice->subtotal, 2) }} {{ config('hospital.currency_symbol_ar') }}</span>
         </div>
-        <div class="col-md-4">
-            <div class="summary-box">
-                <div class="text-muted">{{ __('app.paid_amount') }}</div>
-                <h4 class="mb-0">{{ number_format((float) $invoice->paid_amount, 2) }}</h4>
-            </div>
+
+        <div class="total-row">
+            <strong>الخصم</strong>
+            <span>{{ number_format((float)$invoice->discount, 2) }} {{ config('hospital.currency_symbol_ar') }}</span>
         </div>
-        <div class="col-md-4">
-            <div class="summary-box">
-                <div class="text-muted">{{ __('app.remaining_amount') }}</div>
-                <h4 class="mb-0">{{ number_format((float) $invoice->remaining_amount, 2) }}</h4>
-            </div>
+
+        <div class="total-row">
+            <strong>الإجمالي</strong>
+            <span>{{ number_format((float)$invoice->total, 2) }} {{ config('hospital.currency_symbol_ar') }}</span>
         </div>
-    </div>
 
-    <div class="card content-card p-4 mb-4">
-        <div class="row g-3">
-            <div class="col-md-4">
-                <strong>{{ __('app.invoice_number') }}</strong>
-                <div>{{ $invoice->invoice_number }}</div>
-            </div>
-            <div class="col-md-4">
-                <strong>{{ __('app.invoice_date') }}</strong>
-                <div>{{ $invoice->invoice_date?->format('Y-m-d') }}</div>
-            </div>
-            <div class="col-md-4">
-                <strong>{{ __('app.status') }}</strong>
-                <div>
-                    @if($invoice->status === 'paid')
-                        <span class="badge bg-success">{{ __('app.paid') }}</span>
-                    @elseif($invoice->status === 'partially_paid')
-                        <span class="badge bg-warning text-dark">{{ __('app.partially_paid') }}</span>
-                    @else
-                        <span class="badge bg-danger">{{ __('app.unpaid') }}</span>
-                    @endif
-                </div>
-            </div>
+        <div class="total-row">
+            <strong>المدفوع</strong>
+            <span>{{ number_format((float)$invoice->paid_amount, 2) }} {{ config('hospital.currency_symbol_ar') }}</span>
+        </div>
 
-            <div class="col-md-4">
-                <strong>{{ __('app.patient') }}</strong>
-                <div>{{ $invoice->patient?->name ?? '-' }}</div>
-            </div>
-            <div class="col-md-4">
-                <strong>{{ __('app.doctor') }}</strong>
-                <div>{{ $invoice->doctor?->name ?? '-' }}</div>
-            </div>
-            <div class="col-md-4">
-                <strong>{{ __('app.procedure') }}</strong>
-                <div>{{ $invoice->procedure?->name ?? '-' }}</div>
-            </div>
+        <div class="total-row">
+            <strong>المتبقي</strong>
+            <span>{{ number_format((float)$invoice->balance, 2) }} {{ config('hospital.currency_symbol_ar') }}</span>
+        </div>
 
-            <div class="col-md-6">
-                <strong>{{ __('app.service_name') }}</strong>
-                <div>{{ $invoice->service_name }}</div>
-            </div>
-            <div class="col-md-6">
-                <strong>{{ __('app.created_by') }}</strong>
-                <div>{{ $invoice->creator?->name ?? '-' }}</div>
-            </div>
-
-            <div class="col-12">
-                <strong>{{ __('app.notes') }}</strong>
-                <div>{{ $invoice->notes ?: '-' }}</div>
-            </div>
+        <div class="total-row" style="border-bottom:none;">
+            <strong>الحالة</strong>
+            <span>{{ $invoice->display_status }}</span>
         </div>
     </div>
 
-    <div class="card table-card p-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="mb-0">{{ __('app.payments') }}</h4>
-            @if(auth()->user()->hasPermission('manage-payments'))
-                <a href="{{ route('payments.create', $invoice) }}" class="btn btn-success btn-sm">{{ __('app.add_payment') }}</a>
-            @endif
+    @if($invoice->notes)
+        <div style="margin-top:24px;">
+            <strong>ملاحظات</strong>
+            <p style="line-height:1.8;">{{ $invoice->notes }}</p>
         </div>
+    @endif
 
-        <div class="table-responsive">
-            <table class="table table-bordered align-middle">
-                <thead>
-                    <tr>
-                        <th>{{ __('app.receipt_number') }}</th>
-                        <th>{{ __('app.payment_date') }}</th>
-                        <th>{{ __('app.payment_method') }}</th>
-                        <th>{{ __('app.amount') }}</th>
-                        <th>{{ __('app.created_by') }}</th>
-                        <th>{{ __('app.notes') }}</th>
-                        <th style="width: 120px;">{{ __('app.actions') }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($invoice->payments as $payment)
-                        <tr>
-                            <td>{{ $payment->receipt_number }}</td>
-                            <td>{{ $payment->payment_date?->format('Y-m-d') }}</td>
-                            <td>{{ $payment->payment_method }}</td>
-                            <td>{{ number_format((float) $payment->amount, 2) }}</td>
-                            <td>{{ $payment->creator?->name ?? '-' }}</td>
-                            <td>{{ $payment->notes ?: '-' }}</td>
-                            <td>
-                                <form action="{{ route('payments.destroy', [$invoice, $payment]) }}" method="POST" onsubmit="return confirm('{{ __('app.confirm_delete') }}')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="btn btn-sm btn-danger">{{ __('app.delete') }}</button>
-                                </form>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="7" class="text-center">{{ __('app.no_data') }}</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+    <div class="actions">
+        <a href="{{ route('invoices.index') }}" class="btn btn-secondary">رجوع / Back</a>
+        <button class="btn" onclick="window.print()">طباعة A4 / Print</button>
     </div>
-@endsection
+</div>
+</body>
+</html>

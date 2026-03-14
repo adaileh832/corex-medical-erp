@@ -1,99 +1,104 @@
-@extends('layouts.app')
-
-@section('content')
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الفواتير | Invoices</title>
+    <style>
+        body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f7fb;color:#111827}
+        .container{max-width:1200px;margin:0 auto;padding:24px}
+        .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+        .card{background:#fff;border-radius:16px;box-shadow:0 10px 30px rgba(15,23,42,.06);padding:20px}
+        .btn{display:inline-block;text-decoration:none;border:none;background:#2563eb;color:#fff;padding:12px 16px;border-radius:10px;font-weight:700;cursor:pointer}
+        .btn-secondary{background:#0f172a}
+        table{width:100%;border-collapse:collapse;margin-top:10px}
+        th,td{padding:12px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-size:14px;vertical-align:middle}
+        th{background:#f8fafc;color:#475569}
+        .alert{padding:12px 14px;border-radius:10px;margin-bottom:16px}
+        .alert-success{background:#ecfdf5;color:#047857;border:1px solid #a7f3d0}
+        .actions{display:flex;gap:8px;flex-wrap:wrap}
+        .actions a,.actions button{text-decoration:none;font-weight:700;font-size:13px;padding:8px 10px;border-radius:8px;border:none;cursor:pointer}
+        .actions .view-link{background:#eff6ff;color:#1d4ed8}
+        .actions .delete-btn{background:#fef2f2;color:#b91c1c}
+        .badge{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700}
+        .paid{background:#ecfdf5;color:#047857}
+        .partial{background:#fff7ed;color:#b45309}
+        .unpaid{background:#fef2f2;color:#b91c1c}
+        form{margin:0}
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="topbar">
         <div>
-            <h1 class="mb-1">{{ __('app.invoices') }}</h1>
-            <p class="text-muted mb-0">{{ __('app.invoices_description') }}</p>
+            <h1 style="margin:0;">الفواتير / Invoices</h1>
+            <p style="margin:8px 0 0;color:#64748b;">إدارة فواتير المرضى داخل CoreX</p>
         </div>
 
-        <div class="mt-3 mt-md-0">
-            <a href="{{ route('invoices.create') }}" class="btn btn-warning text-dark">
-                {{ __('app.add_invoice') }}
-            </a>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <a href="{{ url('/dashboard') }}" class="btn btn-secondary">الداشبورد / Dashboard</a>
+            <a href="{{ route('invoices.create') }}" class="btn">إضافة فاتورة / Add Invoice</a>
         </div>
     </div>
 
-    <div class="card table-card p-4 mb-4">
-        <form method="GET" action="{{ route('invoices.index') }}">
-            <div class="row g-3">
-                <div class="col-md-5">
-                    <input type="text" name="search" class="form-control" placeholder="{{ __('app.search_invoices') }}" value="{{ $search }}">
-                </div>
-                <div class="col-md-3">
-                    <input type="date" name="date_from" class="form-control" value="{{ $dateFrom }}">
-                </div>
-                <div class="col-md-3">
-                    <input type="date" name="date_to" class="form-control" value="{{ $dateTo }}">
-                </div>
-                <div class="col-md-1">
-                    <button class="btn btn-dark w-100">{{ __('app.search') }}</button>
-                </div>
-            </div>
-        </form>
-    </div>
+    @if (session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
 
-    <div class="card table-card p-4">
-        <div class="table-responsive">
-            <table class="table table-bordered align-middle">
-                <thead>
-                    <tr>
-                        <th>{{ __('app.invoice_number') }}</th>
-                        <th>{{ __('app.invoice_date') }}</th>
-                        <th>{{ __('app.patient') }}</th>
-                        <th>{{ __('app.doctor') }}</th>
-                        <th>{{ __('app.service_name') }}</th>
-                        <th>{{ __('app.amount') }}</th>
-                        <th>{{ __('app.paid_amount') }}</th>
-                        <th>{{ __('app.remaining_amount') }}</th>
-                        <th>{{ __('app.status') }}</th>
-                        <th style="width: 220px;">{{ __('app.actions') }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($invoices as $invoice)
-                        <tr>
-                            <td>{{ $invoice->invoice_number }}</td>
-                            <td>{{ $invoice->invoice_date?->format('Y-m-d') }}</td>
-                            <td>{{ $invoice->patient?->name ?? '-' }}</td>
-                            <td>{{ $invoice->doctor?->name ?? '-' }}</td>
-                            <td>{{ $invoice->service_name }}</td>
-                            <td>{{ number_format((float) $invoice->amount, 2) }}</td>
-                            <td>{{ number_format((float) $invoice->paid_amount, 2) }}</td>
-                            <td>{{ number_format((float) $invoice->remaining_amount, 2) }}</td>
-                            <td>
-                                @if($invoice->status === 'paid')
-                                    <span class="badge bg-success">{{ __('app.paid') }}</span>
-                                @elseif($invoice->status === 'partially_paid')
-                                    <span class="badge bg-warning text-dark">{{ __('app.partially_paid') }}</span>
-                                @else
-                                    <span class="badge bg-danger">{{ __('app.unpaid') }}</span>
-                                @endif
-                            </td>
-                            <td>
-                                <div class="d-flex flex-wrap gap-2">
-                                    <a href="{{ route('invoices.show', $invoice) }}" class="btn btn-sm btn-info text-white">{{ __('app.view') }}</a>
-                                    <a href="{{ route('invoices.edit', $invoice) }}" class="btn btn-sm btn-warning text-dark">{{ __('app.edit') }}</a>
+    <div class="card">
+        <table>
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>رقم الفاتورة</th>
+                <th>المريض</th>
+                <th>الإجمالي</th>
+                <th>المدفوع</th>
+                <th>المتبقي</th>
+                <th>طريقة الدفع</th>
+                <th>الحالة</th>
+                <th>العمليات</th>
+            </tr>
+            </thead>
+            <tbody>
+            @forelse($invoices as $invoice)
+                <tr>
+                    <td>{{ $invoice->id }}</td>
+                    <td>{{ $invoice->invoice_number }}</td>
+                    <td>{{ $invoice->patient?->display_name ?? '-' }}</td>
+                    <td>{{ number_format((float)$invoice->total, 2) }} {{ config('hospital.currency_symbol_ar') }}</td>
+                    <td>{{ number_format((float)$invoice->paid_amount, 2) }} {{ config('hospital.currency_symbol_ar') }}</td>
+                    <td>{{ number_format((float)$invoice->balance, 2) }} {{ config('hospital.currency_symbol_ar') }}</td>
+                    <td>{{ config('hospital.payment_methods.' . $invoice->payment_method, $invoice->payment_method ?? '-') }}</td>
+                    <td>
+                        <span class="badge {{ $invoice->display_status }}">
+                            {{ $invoice->display_status }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="actions">
+                            <a class="view-link" href="{{ route('invoices.show', $invoice) }}">عرض / View</a>
 
-                                    <form action="{{ route('invoices.destroy', $invoice) }}" method="POST" onsubmit="return confirm('{{ __('app.confirm_delete') }}')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="btn btn-sm btn-danger">{{ __('app.delete') }}</button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="10" class="text-center">{{ __('app.no_data') }}</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+                            <form method="POST" action="{{ route('invoices.destroy', $invoice) }}" onsubmit="return confirm('هل أنت متأكد من حذف الفاتورة؟');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="delete-btn">حذف / Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="9" style="text-align:center;">لا توجد فواتير حتى الآن / No invoices found.</td>
+                </tr>
+            @endforelse
+            </tbody>
+        </table>
 
-        <div class="mt-3">
+        <div style="margin-top:16px;">
             {{ $invoices->links() }}
         </div>
     </div>
-@endsection
+</div>
+</body>
+</html>

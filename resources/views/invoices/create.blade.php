@@ -1,87 +1,136 @@
-@extends('layouts.app')
-
-@section('content')
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إضافة فاتورة | Add Invoice</title>
+    <style>
+        body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f7fb;color:#111827}
+        .container{max-width:1100px;margin:0 auto;padding:24px}
+        .card{background:#fff;border-radius:16px;box-shadow:0 10px 30px rgba(15,23,42,.06);padding:24px}
+        .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+        .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+        .full{grid-column:1 / -1}
+        label{display:block;margin-bottom:8px;font-weight:700;font-size:14px}
+        input,select,textarea{width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid #d1d5db;border-radius:10px}
+        textarea{min-height:100px;resize:vertical}
+        .btn{display:inline-block;text-decoration:none;border:none;background:#2563eb;color:#fff;padding:12px 16px;border-radius:10px;font-weight:700;cursor:pointer}
+        .btn-secondary{background:#0f172a}
+        .item-row{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:12px}
+        .errors{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;padding:12px 14px;border-radius:10px;margin-bottom:16px}
+        @media (max-width:768px){.grid,.item-row{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="topbar">
         <div>
-            <h1 class="mb-1">{{ __('app.add_invoice') }}</h1>
-            <p class="text-muted mb-0">{{ __('app.add_invoice_description') }}</p>
+            <h1 style="margin:0;">إضافة فاتورة / Add Invoice</h1>
+            <p style="margin:8px 0 0;color:#64748b;">فاتورة المريض + الإجراءات فقط</p>
         </div>
+
+        <a href="{{ route('invoices.index') }}" class="btn btn-secondary">رجوع / Back</a>
     </div>
 
-    <div class="card content-card p-4">
-        <form action="{{ route('invoices.store') }}" method="POST">
+    <div class="card">
+        @if ($errors->any())
+            <div class="errors">
+                <strong>يوجد أخطاء / There are validation errors:</strong>
+                <ul style="margin:8px 0 0;padding-inline-start:18px;">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <form method="POST" action="{{ route('invoices.store') }}">
             @csrf
 
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label">{{ __('app.invoice_number') }}</label>
-                    <input type="text" name="invoice_number" class="form-control" value="{{ old('invoice_number', $nextInvoiceNumber) }}" required>
-                </div>
-
-                <div class="col-md-4">
-                    <label class="form-label">{{ __('app.invoice_date') }}</label>
-                    <input type="date" name="invoice_date" class="form-control" value="{{ old('invoice_date', now()->format('Y-m-d')) }}" required>
-                </div>
-
-                <div class="col-md-4">
-                    <label class="form-label">{{ __('app.status') }}</label>
-                    <select name="status" class="form-select" required>
-                        <option value="unpaid" @selected(old('status', 'unpaid') === 'unpaid')>{{ __('app.unpaid') }}</option>
-                        <option value="partially_paid" @selected(old('status') === 'partially_paid')>{{ __('app.partially_paid') }}</option>
-                        <option value="paid" @selected(old('status') === 'paid')>{{ __('app.paid') }}</option>
-                    </select>
-                </div>
-
-                <div class="col-md-4">
-                    <label class="form-label">{{ __('app.patient') }}</label>
-                    <select name="patient_id" class="form-select" required>
-                        <option value="">{{ __('app.select_option') }}</option>
+            <div class="grid">
+                <div>
+                    <label for="patient_id">المريض / Patient</label>
+                    <select id="patient_id" name="patient_id" required>
+                        <option value="">اختر المريض</option>
                         @foreach($patients as $patient)
-                            <option value="{{ $patient->id }}" @selected(old('patient_id') == $patient->id)>{{ $patient->name }}</option>
+                            <option value="{{ $patient->id }}" @selected(old('patient_id') == $patient->id)>
+                                {{ $patient->display_name }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
 
-                <div class="col-md-4">
-                    <label class="form-label">{{ __('app.doctor') }}</label>
-                    <select name="doctor_id" class="form-select">
-                        <option value="">{{ __('app.select_option') }}</option>
-                        @foreach($doctors as $doctor)
-                            <option value="{{ $doctor->id }}" @selected(old('doctor_id') == $doctor->id)>{{ $doctor->name }}</option>
+                <div>
+                    <label for="payment_method">طريقة الدفع / Payment Method</label>
+                    <select id="payment_method" name="payment_method" required>
+                        <option value="">اختر</option>
+                        @foreach($paymentMethods as $key => $label)
+                            <option value="{{ $key }}" @selected(old('payment_method') == $key)>{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>
 
-                <div class="col-md-4">
-                    <label class="form-label">{{ __('app.procedure') }}</label>
-                    <select name="procedure_id" class="form-select">
-                        <option value="">{{ __('app.select_option') }}</option>
-                        @foreach($procedures as $procedure)
-                            <option value="{{ $procedure->id }}" @selected(old('procedure_id') == $procedure->id)>{{ $procedure->name }}</option>
-                        @endforeach
-                    </select>
+                <div>
+                    <label for="discount">الخصم / Discount ({{ config('hospital.currency_symbol_ar') }})</label>
+                    <input id="discount" type="number" step="0.01" min="0" name="discount" value="{{ old('discount', 0) }}">
                 </div>
 
-                <div class="col-md-8">
-                    <label class="form-label">{{ __('app.service_name') }}</label>
-                    <input type="text" name="service_name" class="form-control" value="{{ old('service_name') }}" required>
+                <div>
+                    <label for="paid_amount">المبلغ المدفوع / Paid Amount ({{ config('hospital.currency_symbol_ar') }})</label>
+                    <input id="paid_amount" type="number" step="0.01" min="0" name="paid_amount" value="{{ old('paid_amount', 0) }}">
                 </div>
 
-                <div class="col-md-4">
-                    <label class="form-label">{{ __('app.amount') }}</label>
-                    <input type="number" step="0.01" min="0" name="amount" class="form-control" value="{{ old('amount', 0) }}" required>
+                <div class="full">
+                    <label>الإجراءات / Procedures</label>
+
+                    <div class="item-row">
+                        <select name="items[0][procedure_id]" required>
+                            <option value="">اختر الإجراء</option>
+                            @foreach($procedures as $procedure)
+                                <option value="{{ $procedure->id }}">
+                                    {{ $procedure->display_name }} - {{ number_format((float)$procedure->price, 2) }} {{ config('hospital.currency_symbol_ar') }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <input type="number" min="1" name="items[0][quantity]" value="1" placeholder="الكمية / Quantity" required>
+                    </div>
+
+                    <div class="item-row">
+                        <select name="items[1][procedure_id]">
+                            <option value="">اختر الإجراء</option>
+                            @foreach($procedures as $procedure)
+                                <option value="{{ $procedure->id }}">
+                                    {{ $procedure->display_name }} - {{ number_format((float)$procedure->price, 2) }} {{ config('hospital.currency_symbol_ar') }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <input type="number" min="1" name="items[1][quantity]" value="1" placeholder="الكمية / Quantity">
+                    </div>
+
+                    <div class="item-row">
+                        <select name="items[2][procedure_id]">
+                            <option value="">اختر الإجراء</option>
+                            @foreach($procedures as $procedure)
+                                <option value="{{ $procedure->id }}">
+                                    {{ $procedure->display_name }} - {{ number_format((float)$procedure->price, 2) }} {{ config('hospital.currency_symbol_ar') }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <input type="number" min="1" name="items[2][quantity]" value="1" placeholder="الكمية / Quantity">
+                    </div>
                 </div>
 
-                <div class="col-12">
-                    <label class="form-label">{{ __('app.notes') }}</label>
-                    <textarea name="notes" class="form-control" rows="4">{{ old('notes') }}</textarea>
+                <div class="full">
+                    <label for="notes">ملاحظات / Notes</label>
+                    <textarea id="notes" name="notes">{{ old('notes') }}</textarea>
                 </div>
             </div>
 
-            <div class="mt-4 d-flex gap-2">
-                <button class="btn btn-warning text-dark">{{ __('app.save') }}</button>
-                <a href="{{ route('invoices.index') }}" class="btn btn-secondary">{{ __('app.back') }}</a>
+            <div style="margin-top:20px;">
+                <button type="submit" class="btn">حفظ الفاتورة / Save Invoice</button>
             </div>
         </form>
     </div>
-@endsection
+</div>
+</body>
+</html>
