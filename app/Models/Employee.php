@@ -46,6 +46,11 @@ class Employee extends Model
         return $this->hasMany(PayrollItem::class);
     }
 
+    public function leaveRequests()
+    {
+        return $this->hasMany(LeaveRequest::class);
+    }
+
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');

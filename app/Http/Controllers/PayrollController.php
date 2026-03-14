@@ -92,10 +92,10 @@ class PayrollController extends Controller
                 if ($employee->employment_type === 'monthly') {
                     $daysInMonth = Carbon::create($validated['period_year'], $validated['period_month'], 1)->daysInMonth;
                     $dailyRate = $daysInMonth > 0 ? $baseSalary / $daysInMonth : 0;
-                    $deductions = $dailyRate * $absentDays;
+                    $deductions = round($dailyRate * $absentDays, 2);
                     $grossAmount = $baseSalary;
                 } else {
-                    $grossAmount = $dailyWage * $workedDays;
+                    $grossAmount = round($dailyWage * $workedDays, 2);
                 }
 
                 $netAmount = max(0, $grossAmount - $deductions);
@@ -132,6 +132,13 @@ class PayrollController extends Controller
         $totalNet = (float) $payroll->items->sum('net_amount');
 
         return view('payrolls.show', compact('payroll', 'totalGross', 'totalDeductions', 'totalNet'));
+    }
+
+    public function payslip(PayrollItem $payrollItem): View
+    {
+        $payrollItem->load(['employee', 'payroll']);
+
+        return view('payrolls.payslip', compact('payrollItem'));
     }
 
     protected function generatePayrollNumber(): string

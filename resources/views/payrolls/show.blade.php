@@ -67,6 +67,7 @@
                         <th>{{ __('app.gross_amount') }}</th>
                         <th>{{ __('app.deductions') }}</th>
                         <th>{{ __('app.net_amount') }}</th>
+                        <th>{{ __('app.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -80,10 +81,13 @@
                             <td>{{ number_format((float) $item->gross_amount, 2) }}</td>
                             <td>{{ number_format((float) $item->deductions, 2) }}</td>
                             <td>{{ number_format((float) $item->net_amount, 2) }}</td>
+                            <td>
+                                <a href="{{ route('payrolls.payslip', $item) }}" class="btn btn-sm btn-info text-white">{{ __('app.view') }}</a>
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center">{{ __('app.no_data') }}</td>
+                            <td colspan="9" class="text-center">{{ __('app.no_data') }}</td>
                         </tr>
                     @endforelse
                 </tbody>

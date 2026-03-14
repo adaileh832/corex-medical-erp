@@ -40,6 +40,8 @@ class RolePermissionSeeder extends Seeder
 
             ['name' => 'Manage Employees', 'slug' => 'manage-employees', 'group_name' => 'hr'],
             ['name' => 'Manage Attendance', 'slug' => 'manage-attendance', 'group_name' => 'hr'],
+            ['name' => 'Manage Leave Requests', 'slug' => 'manage-leave-requests', 'group_name' => 'hr'],
+            ['name' => 'View Attendance Reports', 'slug' => 'view-attendance-reports', 'group_name' => 'hr'],
             ['name' => 'Manage Payroll', 'slug' => 'manage-payroll', 'group_name' => 'hr'],
             ['name' => 'View Payroll', 'slug' => 'view-payroll', 'group_name' => 'hr'],
 
@@ -90,6 +92,8 @@ class RolePermissionSeeder extends Seeder
             'view-inventory-reports',
             'manage-employees',
             'manage-attendance',
+            'manage-leave-requests',
+            'view-attendance-reports',
             'view-payroll',
         ];
 

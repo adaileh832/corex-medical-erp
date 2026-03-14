@@ -5,35 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $globalSettings['hospital_name'] ?? 'CoreX Medical ERP' }}</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap{{ $appDirection === 'rtl' ? '.rtl' : '' }}.min.css" rel="stylesheet">
-
     <style>
-        body {
-            background-color: #f5f7fb;
-            font-family: Tahoma, Arial, sans-serif;
-        }
-
-        .navbar-brand img {
-            height: 42px;
-            width: auto;
-            object-fit: contain;
-        }
-
-        .content-card,
-        .table-card,
-        .stat-card {
-            border: none;
-            border-radius: 18px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.05);
-        }
-
-        .summary-box {
-            border-radius: 14px;
-            padding: 16px;
-            background: #f8fafc;
-            border: 1px solid #e9ecef;
-        }
+        body { background-color: #f5f7fb; font-family: Tahoma, Arial, sans-serif; }
+        .navbar-brand img { height: 42px; width: auto; object-fit: contain; }
+        .content-card, .table-card, .stat-card { border: none; border-radius: 18px; box-shadow: 0 8px 25px rgba(0,0,0,0.05); }
+        .summary-box { border-radius: 14px; padding: 16px; background: #f8fafc; border: 1px solid #e9ecef; }
     </style>
 </head>
 <body>
@@ -98,6 +75,8 @@
                     @if(
                         auth()->user()->hasPermission('manage-employees') ||
                         auth()->user()->hasPermission('manage-attendance') ||
+                        auth()->user()->hasPermission('manage-leave-requests') ||
+                        auth()->user()->hasPermission('view-attendance-reports') ||
                         auth()->user()->hasPermission('view-payroll') ||
                         auth()->user()->hasPermission('manage-payroll')
                     )

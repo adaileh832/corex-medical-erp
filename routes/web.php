@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\AttendanceReportController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DoctorController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\InventoryItemController;
 use App\Http\Controllers\InventoryReportController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\OperationController;
 use App\Http\Controllers\PatientController;
@@ -34,14 +36,12 @@ Route::get('/locale/{locale}', [LocaleController::class, 'switch'])->name('local
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
-
     Route::get('/setup/manager', [SetupController::class, 'createManager'])->name('setup.manager');
     Route::post('/setup/manager', [SetupController::class, 'storeManager'])->name('setup.manager.store');
 });
 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::middleware('permission:manage-patients')->group(function () {
@@ -172,9 +172,24 @@ Route::middleware('auth')->group(function () {
         Route::post('/attendance', [AttendanceController::class, 'store'])->name('attendance.store');
     });
 
+    Route::middleware('permission:manage-leave-requests')->group(function () {
+        Route::get('/leave-requests', [LeaveRequestController::class, 'index'])->name('leave-requests.index');
+        Route::get('/leave-requests/create', [LeaveRequestController::class, 'create'])->name('leave-requests.create');
+        Route::post('/leave-requests', [LeaveRequestController::class, 'store'])->name('leave-requests.store');
+        Route::get('/leave-requests/{leaveRequest}/edit', [LeaveRequestController::class, 'edit'])->name('leave-requests.edit');
+        Route::put('/leave-requests/{leaveRequest}', [LeaveRequestController::class, 'update'])->name('leave-requests.update');
+        Route::delete('/leave-requests/{leaveRequest}', [LeaveRequestController::class, 'destroy'])->name('leave-requests.destroy');
+    });
+
+    Route::middleware('permission:view-attendance-reports')->group(function () {
+        Route::get('/attendance-reports/monthly', [AttendanceReportController::class, 'monthly'])->name('attendance-reports.monthly');
+        Route::get('/attendance-reports/summary', [AttendanceReportController::class, 'summary'])->name('attendance-reports.summary');
+    });
+
     Route::middleware('permission:view-payroll')->group(function () {
         Route::get('/payrolls', [PayrollController::class, 'index'])->name('payrolls.index');
         Route::get('/payrolls/{payroll}', [PayrollController::class, 'show'])->name('payrolls.show');
+        Route::get('/payroll-items/{payrollItem}/payslip', [PayrollController::class, 'payslip'])->name('payrolls.payslip');
     });
 
     Route::middleware('permission:manage-payroll')->group(function () {
