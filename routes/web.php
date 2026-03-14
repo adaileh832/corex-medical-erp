@@ -12,6 +12,7 @@ use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\DoctorPaymentController;
 use App\Http\Controllers\DoctorStatementController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\FinancialStatementController;
 use App\Http\Controllers\InventoryItemController;
 use App\Http\Controllers\InventoryReportController;
 use App\Http\Controllers\InvoiceController;
@@ -233,6 +234,12 @@ Route::middleware('auth')->group(function () {
     Route::middleware('permission:view-accounting-reports')->group(function () {
         Route::get('/accounting-reports/ledger', [AccountingReportController::class, 'ledger'])->name('accounting-reports.ledger');
         Route::get('/accounting-reports/trial-balance', [AccountingReportController::class, 'trialBalance'])->name('accounting-reports.trial-balance');
+        Route::get('/financial-statements/income-statement', [FinancialStatementController::class, 'incomeStatement'])->name('financial-statements.income-statement');
+        Route::get('/financial-statements/balance-sheet', [FinancialStatementController::class, 'balanceSheet'])->name('financial-statements.balance-sheet');
+        Route::get('/financial-statements/revenue-report', [FinancialStatementController::class, 'revenueReport'])->name('financial-statements.revenue-report');
+        Route::get('/financial-statements/expense-report', [FinancialStatementController::class, 'expenseReport'])->name('financial-statements.expense-report');
+        Route::get('/financial-statements/cash-movement', [FinancialStatementController::class, 'cashMovement'])->name('financial-statements.cash-movement');
+        Route::get('/financial-statements/bank-movement', [FinancialStatementController::class, 'bankMovement'])->name('financial-statements.bank-movement');
     });
 
     Route::middleware('role:manager')->group(function () {
