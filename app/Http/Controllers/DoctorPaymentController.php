@@ -4,47 +4,65 @@ namespace App\Http\Controllers;
 
 use App\Models\Doctor;
 use App\Models\DoctorPayment;
-use App\Models\DoctorTransaction;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 class DoctorPaymentController extends Controller
 {
     public function create(Doctor $doctor): View
     {
-        $totalTransactions = (float) DoctorTransaction::query()->where('doctor_id', $doctor->id)->sum('amount');
-        $totalPayments = (float) DoctorPayment::query()->where('doctor_id', $doctor->id)->sum('amount');
-        $balance = max(0, $totalTransactions - $totalPayments);
-
         return view('doctor-payments.create', [
             'doctor' => $doctor,
-            'balance' => $balance,
-            'nextPaymentNumber' => $this->generatePaymentNumber(),
+            'paymentMethods' => config('hospital.payment_methods', []),
         ]);
     }
 
     public function store(Request $request, Doctor $doctor): RedirectResponse
     {
-        $totalTransactions = (float) DoctorTransaction::query()->where('doctor_id', $doctor->id)->sum('amount');
-        $totalPayments = (float) DoctorPayment::query()->where('doctor_id', $doctor->id)->sum('amount');
-        $balance = max(0, $totalTransactions - $totalPayments);
-
         $validated = $request->validate([
-            'payment_number' => ['required', 'string', 'max:100', 'unique:doctor_payments,payment_number'],
+            'amount' => ['required', 'numeric', 'min:0.01'],
+            'payment_method' => ['required', 'in:cash,cliq'],
             'payment_date' => ['required', 'date'],
-            'amount' => ['required', 'numeric', 'min:0.01', 'max:' . max(0.01, $balance)],
             'notes' => ['nullable', 'string'],
+        ], [
+            'amount.required' => 'مبلغ الدفعة مطلوب / Payment amount is required.',
+            'payment_method.required' => 'طريقة الدفع مطلوبة / Payment method is required.',
+            'payment_date.required' => 'تاريخ الدفع مطلوب / Payment date is required.',
         ]);
 
-        $validated['doctor_id'] = $doctor->id;
-        $validated['created_by'] = auth()->id();
+        $data = [];
 
-        DoctorPayment::create($validated);
+        if (Schema::hasColumn('doctor_payments', 'doctor_id')) {
+            $data['doctor_id'] = $doctor->id;
+        }
+
+        if (Schema::hasColumn('doctor_payments', 'payment_number')) {
+            $data['payment_number'] = $this->generatePaymentNumber();
+        }
+
+        if (Schema::hasColumn('doctor_payments', 'amount')) {
+            $data['amount'] = $validated['amount'];
+        }
+
+        if (Schema::hasColumn('doctor_payments', 'payment_method')) {
+            $data['payment_method'] = $validated['payment_method'];
+        }
+
+        if (Schema::hasColumn('doctor_payments', 'payment_date')) {
+            $data['payment_date'] = $validated['payment_date'];
+        }
+
+        if (Schema::hasColumn('doctor_payments', 'notes')) {
+            $data['notes'] = $validated['notes'] ?? null;
+        }
+
+        DoctorPayment::create($data);
 
         return redirect()
-            ->route('doctor-statements.index', ['doctor_id' => $doctor->id])
-            ->with('success', __('app.doctor_payment_created'));
+            ->route('doctor-statements.show', $doctor)
+            ->with('success', 'تمت إضافة دفعة للطبيب بنجاح / Doctor payment added successfully.');
     }
 
     public function destroy(DoctorPayment $doctorPayment): RedirectResponse
@@ -53,15 +71,16 @@ class DoctorPaymentController extends Controller
         $doctorPayment->delete();
 
         return redirect()
-            ->route('doctor-statements.index', ['doctor_id' => $doctorId])
-            ->with('success', __('app.doctor_payment_deleted'));
+            ->route('doctor-statements.show', $doctorId)
+            ->with('success', 'تم حذف دفعة الطبيب بنجاح / Doctor payment deleted successfully.');
     }
 
-    protected function generatePaymentNumber(): string
+    private function generatePaymentNumber(): string
     {
-        $lastPayment = DoctorPayment::query()->latest('id')->first();
-        $nextId = $lastPayment ? ($lastPayment->id + 1) : 1;
+        $prefix = 'DP-';
+        $datePart = now()->format('Ymd');
+        $count = DoctorPayment::query()->count() + 1;
 
-        return 'DOC-PAY-' . now()->format('Y') . '-' . str_pad((string) $nextId, 5, '0', STR_PAD_LEFT);
+        return $prefix . $datePart . '-' . str_pad((string) $count, 4, '0', STR_PAD_LEFT);
     }
 }

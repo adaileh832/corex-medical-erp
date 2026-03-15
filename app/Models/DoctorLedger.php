@@ -5,24 +5,24 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class DoctorPayment extends Model
+class DoctorLedger extends Model
 {
     use HasFactory;
 
-    protected $table = 'doctor_payments';
+    protected $table = 'doctor_ledgers';
 
     protected $fillable = [
         'doctor_id',
-        'payment_number',
-        'amount',
-        'payment_method',
-        'payment_date',
+        'reference',
+        'description',
+        'amount_due',
+        'entry_date',
         'notes',
     ];
 
     protected $casts = [
-        'amount' => 'decimal:2',
-        'payment_date' => 'datetime',
+        'amount_due' => 'decimal:2',
+        'entry_date' => 'date',
     ];
 
     public function doctor()

@@ -27,4 +27,29 @@ class Doctor extends Model
     {
         return $this->full_name ?: ($this->name ?? '-');
     }
+
+    public function ledgers()
+    {
+        return $this->hasMany(DoctorLedger::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(DoctorPayment::class);
+    }
+
+    public function getTotalDueAttribute(): float
+    {
+        return (float) $this->ledgers()->sum('amount_due');
+    }
+
+    public function getTotalPaidAttribute(): float
+    {
+        return (float) $this->payments()->sum('amount');
+    }
+
+    public function getBalanceAttribute(): float
+    {
+        return max($this->total_due - $this->total_paid, 0);
+    }
 }

@@ -3,64 +3,61 @@
 namespace App\Http\Controllers;
 
 use App\Models\Doctor;
-use App\Models\DoctorPayment;
-use App\Models\DoctorTransaction;
+use App\Models\DoctorLedger;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class DoctorStatementController extends Controller
 {
-    public function index(Request $request): View
+    public function index(): View
     {
-        $doctorId = $request->get('doctor_id');
-        $dateFrom = $request->get('date_from');
-        $dateTo = $request->get('date_to');
+        $doctors = Doctor::query()
+            ->latest()
+            ->get();
 
-        $doctors = Doctor::query()->orderBy('name')->get();
+        return view('doctor-statements.index', [
+            'doctors' => $doctors,
+        ]);
+    }
 
-        $selectedDoctor = null;
-        $transactions = collect();
-        $payments = collect();
-        $totalTransactions = 0;
-        $totalPayments = 0;
-        $balance = 0;
+    public function show(Doctor $doctor): View
+    {
+        $doctor->load([
+            'ledgers' => fn ($query) => $query->latest('entry_date'),
+            'payments' => fn ($query) => $query->latest('payment_date'),
+        ]);
 
-        if ($doctorId) {
-            $selectedDoctor = Doctor::query()->findOrFail($doctorId);
+        return view('doctor-statements.show', [
+            'doctor' => $doctor,
+        ]);
+    }
 
-            $transactions = DoctorTransaction::query()
-                ->with(['patient', 'procedure', 'operation'])
-                ->where('doctor_id', $doctorId)
-                ->when($dateFrom, fn ($query) => $query->whereDate('transaction_date', '>=', $dateFrom))
-                ->when($dateTo, fn ($query) => $query->whereDate('transaction_date', '<=', $dateTo))
-                ->orderBy('transaction_date')
-                ->orderBy('id')
-                ->get();
+    public function storeEntry(Request $request, Doctor $doctor): RedirectResponse
+    {
+        $validated = $request->validate([
+            'reference' => ['nullable', 'string', 'max:255'],
+            'description' => ['required', 'string', 'max:255'],
+            'amount_due' => ['required', 'numeric', 'min:0.01'],
+            'entry_date' => ['required', 'date'],
+            'notes' => ['nullable', 'string'],
+        ], [
+            'description.required' => 'الوصف مطلوب / Description is required.',
+            'amount_due.required' => 'المبلغ المستحق مطلوب / Due amount is required.',
+            'entry_date.required' => 'تاريخ القيد مطلوب / Entry date is required.',
+        ]);
 
-            $payments = DoctorPayment::query()
-                ->where('doctor_id', $doctorId)
-                ->when($dateFrom, fn ($query) => $query->whereDate('payment_date', '>=', $dateFrom))
-                ->when($dateTo, fn ($query) => $query->whereDate('payment_date', '<=', $dateTo))
-                ->orderBy('payment_date')
-                ->orderBy('id')
-                ->get();
+        DoctorLedger::create([
+            'doctor_id' => $doctor->id,
+            'reference' => $validated['reference'] ?? null,
+            'description' => $validated['description'],
+            'amount_due' => $validated['amount_due'],
+            'entry_date' => $validated['entry_date'],
+            'notes' => $validated['notes'] ?? null,
+        ]);
 
-            $totalTransactions = (float) $transactions->sum('amount');
-            $totalPayments = (float) $payments->sum('amount');
-            $balance = $totalTransactions - $totalPayments;
-        }
-
-        return view('doctor-statements.index', compact(
-            'doctors',
-            'selectedDoctor',
-            'transactions',
-            'payments',
-            'totalTransactions',
-            'totalPayments',
-            'balance',
-            'doctorId',
-            'dateFrom',
-            'dateTo'
-        ));
+        return redirect()
+            ->route('doctor-statements.show', $doctor)
+            ->with('success', 'تمت إضافة مستحق للطبيب بنجاح / Doctor due entry added successfully.');
     }
 }

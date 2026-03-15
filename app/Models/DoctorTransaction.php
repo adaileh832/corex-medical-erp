@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DoctorTransaction extends Model
 {
@@ -12,50 +13,42 @@ class DoctorTransaction extends Model
     protected $fillable = [
         'doctor_id',
         'operation_id',
-        'invoice_id',
-        'procedure_id',
         'patient_id',
+        'procedure_id',
         'transaction_date',
-        'doctor_role',
-        'description',
         'amount',
+        'type',
+        'description',
+        'notes',
         'created_by',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'transaction_date' => 'date',
-            'amount' => 'decimal:2',
-        ];
-    }
+    protected $casts = [
+        'transaction_date' => 'date',
+        'amount' => 'decimal:2',
+    ];
 
-    public function doctor()
+    public function doctor(): BelongsTo
     {
         return $this->belongsTo(Doctor::class);
     }
 
-    public function operation()
+    public function operation(): BelongsTo
     {
         return $this->belongsTo(Operation::class);
     }
 
-    public function invoice()
-    {
-        return $this->belongsTo(Invoice::class);
-    }
-
-    public function procedure()
-    {
-        return $this->belongsTo(Procedure::class);
-    }
-
-    public function patient()
+    public function patient(): BelongsTo
     {
         return $this->belongsTo(Patient::class);
     }
 
-    public function creator()
+    public function procedure(): BelongsTo
+    {
+        return $this->belongsTo(Procedure::class);
+    }
+
+    public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }

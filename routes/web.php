@@ -61,7 +61,6 @@ Route::middleware('auth')->group(function () {
     /*
     |--------------------------------------------------------------------------
     | CoreX Invoice Branding Preview
-    | معاينة هوية الفاتورة
     |--------------------------------------------------------------------------
     */
     Route::view('/invoices/branding-preview', 'invoices.branding-preview')->name('invoices.branding-preview');
@@ -69,7 +68,6 @@ Route::middleware('auth')->group(function () {
     /*
     |--------------------------------------------------------------------------
     | CoreX Patients Module
-    | وحدة المرضى - مثبتة مؤقتًا تحت auth فقط حتى نكمل الصلاحيات لاحقًا
     |--------------------------------------------------------------------------
     */
     Route::get('/patients', [PatientController::class, 'index'])->name('patients.index');
@@ -83,7 +81,6 @@ Route::middleware('auth')->group(function () {
     /*
     |--------------------------------------------------------------------------
     | CoreX Doctors Module
-    | وحدة الأطباء - مثبتة مؤقتًا تحت auth فقط حتى نكمل الصلاحيات لاحقًا
     |--------------------------------------------------------------------------
     */
     Route::get('/doctors', [DoctorController::class, 'index'])->name('doctors.index');
@@ -96,8 +93,20 @@ Route::middleware('auth')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
+    | CoreX Doctor Financial Accounts
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/doctor-statements', [DoctorStatementController::class, 'index'])->name('doctor-statements.index');
+    Route::get('/doctor-statements/{doctor}', [DoctorStatementController::class, 'show'])->name('doctor-statements.show');
+    Route::post('/doctor-statements/{doctor}/entries', [DoctorStatementController::class, 'storeEntry'])->name('doctor-statements.entries.store');
+
+    Route::get('/doctors/{doctor}/payments/create', [DoctorPaymentController::class, 'create'])->name('doctor-payments.create');
+    Route::post('/doctors/{doctor}/payments', [DoctorPaymentController::class, 'store'])->name('doctor-payments.store');
+    Route::delete('/doctor-payments/{doctorPayment}', [DoctorPaymentController::class, 'destroy'])->name('doctor-payments.destroy');
+
+    /*
+    |--------------------------------------------------------------------------
     | CoreX Procedures Module
-    | وحدة الإجراءات - مثبتة مؤقتًا تحت auth فقط حتى نكمل الصلاحيات لاحقًا
     |--------------------------------------------------------------------------
     */
     Route::get('/procedures', [ProcedureController::class, 'index'])->name('procedures.index');
@@ -111,7 +120,6 @@ Route::middleware('auth')->group(function () {
     /*
     |--------------------------------------------------------------------------
     | CoreX Invoices Module
-    | وحدة الفواتير - مثبتة مؤقتًا تحت auth فقط حتى نكمل الصلاحيات لاحقًا
     |--------------------------------------------------------------------------
     */
     Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index');
@@ -123,7 +131,6 @@ Route::middleware('auth')->group(function () {
     /*
     |--------------------------------------------------------------------------
     | CoreX Payments Module
-    | وحدة الدفعات - مثبتة مؤقتًا تحت auth فقط حتى نكمل الصلاحيات لاحقًا
     |--------------------------------------------------------------------------
     */
     Route::get('/invoices/{invoice}/payments/create', [PaymentController::class, 'create'])->name('payments.create');
@@ -136,16 +143,6 @@ Route::middleware('auth')->group(function () {
         Route::post('/operations', [OperationController::class, 'store'])->name('operations.store');
         Route::get('/operations/{operation}', [OperationController::class, 'show'])->name('operations.show');
         Route::delete('/operations/{operation}', [OperationController::class, 'destroy'])->name('operations.destroy');
-    });
-
-    Route::middleware('permission:view-doctor-statements')->group(function () {
-        Route::get('/doctor-statements', [DoctorStatementController::class, 'index'])->name('doctor-statements.index');
-    });
-
-    Route::middleware('permission:manage-doctor-payments')->group(function () {
-        Route::get('/doctors/{doctor}/payments/create', [DoctorPaymentController::class, 'create'])->name('doctor-payments.create');
-        Route::post('/doctors/{doctor}/payments', [DoctorPaymentController::class, 'store'])->name('doctor-payments.store');
-        Route::delete('/doctor-payments/{doctorPayment}', [DoctorPaymentController::class, 'destroy'])->name('doctor-payments.destroy');
     });
 
     Route::middleware('permission:manage-suppliers')->group(function () {
