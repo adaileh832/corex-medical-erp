@@ -8,16 +8,20 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('payments')) {
+            return;
+        }
+
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('invoice_id')->constrained()->cascadeOnDelete();
-            $table->string('receipt_number')->unique();
+            $table->unsignedBigInteger('invoice_id');
             $table->decimal('amount', 12, 2)->default(0);
-            $table->date('payment_date');
-            $table->string('payment_method', 100);
+            $table->string('payment_method')->nullable();
+            $table->dateTime('payment_date')->nullable();
             $table->text('notes')->nullable();
-            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
+
+            $table->index('invoice_id');
         });
     }
 

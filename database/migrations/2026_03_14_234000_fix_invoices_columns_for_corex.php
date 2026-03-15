@@ -11,8 +11,10 @@ return new class extends Migration
         if (! Schema::hasTable('invoices')) {
             Schema::create('invoices', function (Blueprint $table) {
                 $table->id();
-                $table->string('invoice_number')->unique();
-                $table->foreignId('patient_id')->constrained('patients')->cascadeOnDelete();
+                $table->string('invoice_number')->nullable();
+                $table->foreignId('patient_id')->nullable()->constrained('patients')->nullOnDelete();
+                $table->string('service_name')->nullable();
+                $table->string('name')->nullable();
                 $table->decimal('subtotal', 12, 2)->default(0);
                 $table->decimal('discount', 12, 2)->default(0);
                 $table->decimal('tax', 12, 2)->default(0);
@@ -20,12 +22,13 @@ return new class extends Migration
                 $table->decimal('paid_amount', 12, 2)->default(0);
                 $table->string('status')->default('unpaid');
                 $table->string('payment_method')->nullable();
+                $table->dateTime('payment_date')->nullable();
                 $table->string('currency_code')->default('JOD');
                 $table->text('notes')->nullable();
                 $table->timestamps();
-
-                return;
             });
+
+            return;
         }
 
         Schema::table('invoices', function (Blueprint $table) {
@@ -35,6 +38,14 @@ return new class extends Migration
 
             if (! Schema::hasColumn('invoices', 'patient_id')) {
                 $table->foreignId('patient_id')->nullable()->after('invoice_number')->constrained('patients')->nullOnDelete();
+            }
+
+            if (! Schema::hasColumn('invoices', 'service_name')) {
+                $table->string('service_name')->nullable();
+            }
+
+            if (! Schema::hasColumn('invoices', 'name')) {
+                $table->string('name')->nullable();
             }
 
             if (! Schema::hasColumn('invoices', 'subtotal')) {
@@ -63,6 +74,10 @@ return new class extends Migration
 
             if (! Schema::hasColumn('invoices', 'payment_method')) {
                 $table->string('payment_method')->nullable();
+            }
+
+            if (! Schema::hasColumn('invoices', 'payment_date')) {
+                $table->dateTime('payment_date')->nullable();
             }
 
             if (! Schema::hasColumn('invoices', 'currency_code')) {

@@ -61,6 +61,7 @@ Route::middleware('auth')->group(function () {
     /*
     |--------------------------------------------------------------------------
     | CoreX Invoice Branding Preview
+    | معاينة هوية الفاتورة
     |--------------------------------------------------------------------------
     */
     Route::view('/invoices/branding-preview', 'invoices.branding-preview')->name('invoices.branding-preview');
@@ -119,11 +120,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
     Route::delete('/invoices/{invoice}', [InvoiceController::class, 'destroy'])->name('invoices.destroy');
 
-    Route::middleware('permission:manage-payments')->group(function () {
-        Route::get('/invoices/{invoice}/payments/create', [PaymentController::class, 'create'])->name('payments.create');
-        Route::post('/invoices/{invoice}/payments', [PaymentController::class, 'store'])->name('payments.store');
-        Route::delete('/invoices/{invoice}/payments/{payment}', [PaymentController::class, 'destroy'])->name('payments.destroy');
-    });
+    /*
+    |--------------------------------------------------------------------------
+    | CoreX Payments Module
+    | وحدة الدفعات - مثبتة مؤقتًا تحت auth فقط حتى نكمل الصلاحيات لاحقًا
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/invoices/{invoice}/payments/create', [PaymentController::class, 'create'])->name('payments.create');
+    Route::post('/invoices/{invoice}/payments', [PaymentController::class, 'store'])->name('payments.store');
+    Route::delete('/invoices/{invoice}/payments/{payment}', [PaymentController::class, 'destroy'])->name('payments.destroy');
 
     Route::middleware('permission:manage-operations')->group(function () {
         Route::get('/operations', [OperationController::class, 'index'])->name('operations.index');
